@@ -1,22 +1,13 @@
 
 /* =====================================
-   QESSAT MASR - COMPLETE APP
-   Supabase Auth, Admin & Story Folders
+   QESSAT MASR - CLEAN COMPLETE APP
+   Auth + Admin + Story Folders
 ===================================== */
 
 const SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_TcmwO6zoiB2UbpkbAIjofA_UGxcBLgD';
+const SUPABASE_KEY = 'sb_publishable_Tcmw6zoiB2UbpkbAIjofA_UGxcBLgD';
 
 const $ = id => document.getElementById(id);
-
-const splash = $('splash');
-const app = $('app');
-const audio = $('introAudio');
-const musicBtn = $('musicBtn');
-const enterBtn = $('enterBtn');
-const loginDialog = $('loginDialog');
-const loginBtn = $('loginBtn');
-const langBtn = $('langBtn');
 
 let lang = 'ar';
 let currentUser = null;
@@ -52,6 +43,9 @@ if ($('year')) {
 
 /* الموسيقى */
 
+const audio = $('introAudio');
+const musicBtn = $('musicBtn');
+
 if (musicBtn && audio) {
   musicBtn.addEventListener('click', async () => {
     try {
@@ -70,15 +64,21 @@ if (musicBtn && audio) {
 
 /* دخول الموقع */
 
+const splash = $('splash');
+const app = $('app');
+const enterBtn = $('enterBtn');
+
 if (enterBtn) {
   enterBtn.addEventListener('click', async () => {
     splash?.classList.add('hidden');
     app?.classList.remove('hidden');
     window.scrollTo(0, 0);
 
-    audio?.play().then(() => {
-      if (musicBtn) musicBtn.textContent = 'Ⅱ إيقاف الموسيقى';
-    }).catch(() => {});
+    if (audio) {
+      audio.play().then(() => {
+        if (musicBtn) musicBtn.textContent = 'Ⅱ إيقاف الموسيقى';
+      }).catch(() => {});
+    }
 
     await loadStories();
   });
@@ -86,16 +86,18 @@ if (enterBtn) {
 
 /* تغيير اللغة */
 
+const langBtn = $('langBtn');
+
 if (langBtn) {
-  langBtn.addEventListener('click', async () => {
+  langBtn.addEventListener('click', () => {
     lang = lang === 'ar' ? 'en' : 'ar';
 
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
 
-    document.querySelectorAll('[data-ar]').forEach(el => {
-      const value = el.dataset[lang];
-      if (value) el.textContent = value;
+    document.querySelectorAll('[data-ar]').forEach(element => {
+      const value = element.dataset[lang];
+      if (value) element.textContent = value;
     });
 
     langBtn.textContent = lang === 'ar' ? 'EN' : 'عربي';
@@ -106,8 +108,14 @@ if (langBtn) {
 
 /* تسجيل الدخول */
 
+const loginDialog = $('loginDialog');
+const loginBtn = $('loginBtn');
+
 function showLogin() {
-  if (!loginDialog) return;
+  if (!loginDialog) {
+    showError('نافذة تسجيل الدخول غير موجودة في index.html');
+    return;
+  }
 
   loginDialog.innerHTML = `
     <form class="dialog-card" id="authForm">
@@ -224,7 +232,7 @@ function updateLoginButton() {
     : (lang === 'ar' ? 'تسجيل الدخول' : 'Log in');
 }
 
-/* قائمة المستخدم */
+/* حساب المستخدم */
 
 function showUserMenu() {
   loginDialog.innerHTML = `
@@ -309,9 +317,9 @@ function showAdminPanel() {
 
       <label>اختر مجلد القصة
         <select id="storyCategory" required>
-          ${FOLDERS.map(folder => `
-            <option value="${folder.ar}">${folder.ar}</option>
-          `).join('')}
+          ${FOLDERS.map(folder =>
+            `<option value="${folder.ar}">${folder.ar}</option>`
+          ).join('')}
         </select>
       </label>
 
@@ -331,8 +339,8 @@ function showAdminPanel() {
     <h3>إدارة القصص</h3>
     <div id="adminStories">جارٍ تحميل القصص...</div>
 
-    <button class="outline-btn" id="refreshStories">تحديث القصص</button>
-    <button class="outline-btn" id="adminLogout">تسجيل الخروج</button>
+    <button type="button" class="outline-btn" id="refreshStories">تحديث القصص</button>
+    <button type="button" class="outline-btn" id="adminLogout">تسجيل الخروج</button>
   `;
 
   $('storyForm').onsubmit = saveStory;
@@ -348,7 +356,10 @@ function showAdminPanel() {
 async function saveStory(event) {
   event.preventDefault();
 
-  if (!isAdmin) return alert('غير مسموح');
+  if (!isAdmin) {
+    alert('غير مسموح');
+    return;
+  }
 
   const message = $('storyMessage');
   message.textContent = 'جارٍ حفظ القصة...';
@@ -371,14 +382,13 @@ async function saveStory(event) {
   }
 
   message.textContent = 'تم حفظ القصة بنجاح';
-
   $('storyForm').reset();
 
   await loadAdminStories();
   await loadStories();
 }
 
-/* جلب القصص */
+/* تحميل القصص */
 
 async function loadStories() {
   const { data, error } = await db
@@ -396,7 +406,7 @@ async function loadStories() {
   renderStories();
 }
 
-/* إنشاء بطاقة القصة */
+/* بطاقة القصة */
 
 function createStoryCard(story) {
   const card = document.createElement('article');
@@ -429,75 +439,57 @@ function createStoryCard(story) {
   return card;
 }
 
-/* عرض القصص داخل المجلدات */
+/* عرض القصص */
 
 function renderStories() {
   const latest = document.querySelector('.latest .empty-state');
-  if (!latest) return;
 
-  latest.innerHTML = '';
+  if (latest) {
+    latest.innerHTML = '';
 
-  if (allStories.length === 0) {
-    latest.innerHTML = `
-      <span>📜</span>
-      <h3>${lang === 'ar' ? 'الحكايات قادمة' : 'Stories are coming soon'}</h3>
-      <p>${lang === 'ar' ? 'ستظهر هنا القصص المنشورة قريبًا.' : 'Published stories will appear here soon.'}</p>
-    `;
-  } else {
-    allStories.slice(0, 6).forEach(story => {
-      latest.appendChild(createStoryCard(story));
-    });
+    if (allStories.length === 0) {
+      latest.innerHTML = `
+        <span>📜</span>
+        <h3>${lang === 'ar' ? 'الحكايات قادمة' : 'Stories are coming soon'}</h3>
+        <p>${lang === 'ar' ? 'ستظهر هنا القصص المنشورة قريبًا.' : 'Published stories will appear here soon.'}</p>
+      `;
+    } else {
+      allStories.slice(0, 6).forEach(story => {
+        latest.appendChild(createStoryCard(story));
+      });
+    }
   }
 
-  const eraGrid = document.querySelector('.era-grid');
-  if (!eraGrid) return;
+  const eraCards = document.querySelectorAll('#eras .era-grid .era-card');
 
-  FOLDERS.forEach(folder => {
+  FOLDERS.forEach((folder, index) => {
     const folderStories = allStories.filter(story =>
-      story.category === folder.ar ||
-      story.category === folder.en
+      (story.category || '').trim() === folder.ar ||
+      (story.category || '').trim() === folder.en
     );
 
-    let section = document.getElementById('folder-' + folder.id);
+    const originalCard = eraCards[index];
+    if (!originalCard) return;
 
-    if (!section) {
-      section = document.createElement('section');
-      section.id = 'folder-' + folder.id;
-      section.className = 'section folder-section';
+    let container = originalCard.querySelector('.folder-stories');
 
-      const heading = document.createElement('div');
-      heading.className = 'section-heading';
-
-      const title = document.createElement('h2');
-      title.textContent = folder.icon + ' ' +
-        (lang === 'ar' ? folder.ar : folder.en);
-
-      heading.appendChild(title);
-
-      const storiesContainer = document.createElement('div');
-      storiesContainer.className = 'era-grid';
-      storiesContainer.id = 'stories-' + folder.id;
-
-      section.append(heading, storiesContainer);
-      eraGrid.parentElement.insertBefore(section, document.querySelector('.latest'));
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'folder-stories';
+      originalCard.appendChild(container);
     }
 
-    const title = section.querySelector('h2');
-    title.textContent = folder.icon + ' ' +
-      (lang === 'ar' ? folder.ar : folder.en);
-
-    const storiesContainer = $('stories-' + folder.id);
-    storiesContainer.innerHTML = '';
+    container.innerHTML = '';
 
     if (folderStories.length === 0) {
       const empty = document.createElement('p');
       empty.textContent = lang === 'ar'
         ? 'لا توجد قصص في هذا المجلد حتى الآن.'
         : 'No stories in this folder yet.';
-      storiesContainer.appendChild(empty);
+      container.appendChild(empty);
     } else {
       folderStories.forEach(story => {
-        storiesContainer.appendChild(createStoryCard(story));
+        container.appendChild(createStoryCard(story));
       });
     }
   });
@@ -544,6 +536,7 @@ async function loadAdminStories() {
     category.textContent = 'المجلد: ' + story.category;
 
     const publishButton = document.createElement('button');
+    publishButton.type = 'button';
     publishButton.className = 'gold-btn';
     publishButton.textContent = story.published ? 'إرجاع للمسودات' : 'نشر القصة';
 
@@ -564,6 +557,7 @@ async function loadAdminStories() {
     };
 
     const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
     deleteButton.className = 'outline-btn';
     deleteButton.textContent = 'حذف القصة';
 
@@ -593,7 +587,12 @@ async function loadAdminStories() {
 
 async function initializeApp() {
   try {
-    await checkAdmin();
+    const { data: { user } } = await db.auth.getUser();
+
+    if (user) {
+      await checkAdmin();
+    }
+
     updateLoginButton();
     await loadStories();
   } catch (error) {
@@ -603,226 +602,4 @@ async function initializeApp() {
 
 initializeApp();
 
-console.log('Qessat Masr - Folders System Loaded');
- lang === 'ar'
-      ? story.content_ar
-      : (story.content_en || story.content_ar);
-
-    card.append(title, category, content);
-    container.appendChild(card);
-  });
-}
-
-/* قصص الإدارة */
-
-async function loadAdminStories() {
-  if (!isAdmin) return;
-
-  const container = $('adminStories');
-  if (!container) return;
-
-  container.textContent = 'جارٍ تحميل القصص...';
-
-  const { data, error } = await db
-    .from('stories')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    container.textContent = 'خطأ تحميل القصص: ' + error.message;
-    return;
-  }
-
-  container.innerHTML = '';
-
-  if (!data || data.length === 0) {
-    container.textContent = 'لا توجد قصص حتى الآن';
-    return;
-  }
-
-  data.forEach(story => {
-    const item = document.createElement('article');
-    item.className = 'era-card';
-
-    const title = document.createElement('h3');
-    title.textContent = story.title_ar;
-
-    const status = document.createElement('p');
-    status.textContent = story.published ? 'الحالة: منشورة' : 'الحالة: مسودة';
-
-    const publishButton = document.createElement('button');
-    publishButton.type = 'button';
-    publishButton.className = 'gold-btn';
-    publishButton.textContent = story.published
-      ? 'إرجاع إلى المسودات'
-      : 'نشر القصة';
-
-    publishButton.onclick = async () => {
-      publishButton.disabled = true;
-      publishButton.textContent = 'جارٍ التحديث...';
-
-      const { data: updated, error: updateError } = await db
-        .from('stories')
-        .update({ published: !story.published })
-        .eq('id', story.id)
-        .select('id, published');
-
-      if (updateError || !updated || updated.length === 0) {
-        alert('تعذر تغيير حالة القصة: ' +
-          (updateError?.message || 'لم يتم تحديث أي سجل'));
-        publishButton.disabled = false;
-        publishButton.textContent = story.published
-          ? 'إرجاع إلى المسودات'
-          : 'نشر القصة';
-        return;
-      }
-
-      await loadAdminStories();
-      await loadStories();
-    };
-
-    const deleteButton = document.createElement('button');
-    deleteButton.type = 'button';
-    deleteButton.className = 'outline-btn';
-    deleteButton.textContent = 'حذف القصة';
-
-    deleteButton.onclick = async () => {
-      if (!confirm('هل تريد حذف هذه القصة نهائيًا؟')) return;
-
-      const { error: deleteError } = await db
-        .from('stories')
-        .delete()
-        .eq('id', story.id);
-
-      if (deleteError) {
-        alert('تعذر الحذف: ' + deleteError.message);
-        return;
-      }
-
-      await loadAdminStories();
-      await loadStories();
-    };
-
-    item.append(title, status, publishButton, deleteButton);
-    container.appendChild(item);
-  });
-}
-
-/* استعادة الجلسة */
-
-async function initializeApp() {
-  try {
-    await checkAdmin();
-    updateLoginButton();
-    await loadStories();
-  } catch (error) {
-    console.error('Initialization error:', error);
-  }
-}
-
-initializeApp();
-
-console.log('Qessat Masr initialized');
- if (!isAdmin) return;
-
-  const container = $('adminStories');
-  if (!container) return;
-
-  container.textContent = 'جارٍ تحميل القصص...';
-
-  const { data, error } = await db
-    .from('stories')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    container.textContent = 'خطأ تحميل القصص: ' + error.message;
-    return;
-  }
-
-  container.innerHTML = '';
-
-  if (!data || data.length === 0) {
-    container.textContent = 'لا توجد قصص حتى الآن';
-    return;
-  }
-
-  data.forEach(story => {
-    const item = document.createElement('article');
-    item.className = 'era-card';
-
-    const title = document.createElement('h3');
-    title.textContent = story.title_ar;
-
-    const status = document.createElement('p');
-    status.textContent = story.published ? 'الحالة: منشورة' : 'الحالة: مسودة';
-
-    const publishButton = document.createElement('button');
-    publishButton.type = 'button';
-    publishButton.className = 'gold-btn';
-    publishButton.textContent = story.published
-      ? 'إرجاع إلى المسودات'
-      : 'نشر القصة';
-
-    publishButton.onclick = async () => {
-      publishButton.disabled = true;
-      publishButton.textContent = 'جارٍ التحديث...';
-
-      const { data: updated, error: updateError } = await db
-        .from('stories')
-        .update({ published: !story.published })
-        .eq('id', story.id)
-        .select('id, published');
-
-      if (updateError || !updated || updated.length === 0) {
-        alert('تعذر تغيير حالة القصة: ' +
-          (updateError?.message || 'لم يتم تحديث أي سجل. راجع صلاحيات قاعدة البيانات.'));
-        publishButton.disabled = false;
-        publishButton.textContent = story.published
-          ? 'إرجاع إلى المسودات'
-          : 'نشر القصة';
-        return;
-      }
-
-      await loadAdminStories();
-      await loadStories();
-    };
-
-    const deleteButton = document.createElement('button');
-    deleteButton.type = 'button';
-    deleteButton.className = 'outline-btn';
-    deleteButton.textContent = 'حذف القصة';
-
-    deleteButton.onclick = async () => {
-      if (!confirm('هل تريد حذف هذه القصة نهائيًا؟')) return;
-
-      const { error: deleteError } = await db
-        .from('stories')
-        .delete()
-        .eq('id', story.id);
-
-      if (deleteError) {
-        alert('تعذر الحذف: ' + deleteError.message);
-        return;
-      }
-
-      await loadAdminStories();
-      await loadStories();
-    };
-
-    item.append(title, status, publishButton, deleteButton);
-    container.appendChild(item);
-  });
-}
-
-/* استعادة الجلسة */
-
-async function initializeApp() {
-  await checkAdmin();
-  updateLoginButton();
-  await loadStories();
-}
-
-initializeApp();
-
-console.log('Qessat Masr - New Admin System Loaded');
+console.log('Qessat Masr - Clean App Loaded');
