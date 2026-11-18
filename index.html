@@ -5,279 +5,346 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#17130d">
-  <meta name="description" content="قصة عن مصر: تاريخ وقصص وروايات من كل العصور.">
+  <meta name="description" content="قصة عن مصر: رحلة عبر التاريخ والحضارة والقصص.">
+
+  <title>قصة عن مصر | Qessat Masr</title>
 
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="style.css">
 
-  <title>قصة عن مصر | Qessat Masr</title>
+  <style>
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      background: #17130d;
+      color: #f4ead6;
+      font-family: Tahoma, Arial, sans-serif;
+    }
+
+    button, a { cursor: pointer; }
+
+    .splash {
+      min-height: 100vh;
+      position: relative;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      overflow: hidden;
+      background: linear-gradient(145deg,#21180e,#080705);
+    }
+
+    .splash-art {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .38;
+    }
+
+    .splash-shade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(transparent,#100c08 95%);
+    }
+
+    .splash-content {
+      position: relative;
+      z-index: 1;
+      padding: 30px;
+    }
+
+    .splash-content h1 {
+      color: #d8b46b;
+      font-size: clamp(38px,8vw,72px);
+      margin: 12px 0;
+    }
+
+    .eyebrow { color: #c49a52; }
+
+    .gold-btn {
+      display: inline-block;
+      background: #b58a43;
+      color: #17110a;
+      border: 0;
+      padding: 13px 24px;
+      border-radius: 9px;
+      font-weight: bold;
+      text-decoration: none;
+      margin: 8px 4px;
+    }
+
+    .ghost-btn, .outline-btn, .text-btn {
+      background: transparent;
+      color: #e8d5ad;
+      border: 1px solid #947443;
+      border-radius: 9px;
+      padding: 12px 18px;
+      margin: 5px;
+    }
+
+    .app-shell { min-height: 100vh; }
+    .hidden { display: none !important; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 5%;
+      border-bottom: 1px solid #51412b;
+      background: #17130d;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .brand {
+      color: #d8b46b;
+      font-weight: bold;
+      font-size: 21px;
+      text-decoration: none;
+    }
+
+    .hero {
+      min-height: 360px;
+      display: flex;
+      align-items: center;
+      padding: 45px 8%;
+      background: linear-gradient(100deg,#17130d,#49351c);
+    }
+
+    .hero-copy { max-width: 650px; }
+    .hero h2 { font-size: clamp(30px,6vw,48px); color: #d8b46b; }
+    .hero p { line-height: 2; }
+
+    .section { padding: 35px 6%; }
+    .section-heading { margin-bottom: 22px; }
+    .section-heading h2 { color: #d8b46b; }
+
+    .era-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap: 16px;
+    }
+
+    .era-card {
+      background: #241d13;
+      border: 1px solid #59452a;
+      border-radius: 13px;
+      padding: 20px;
+      line-height: 1.8;
+    }
+
+    .era-card h3 { color: #d8b46b; }
+    .era-card > span { font-size: 28px; }
+
+    .empty-state {
+      background: #241d13;
+      border: 1px solid #59452a;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      line-height: 2;
+    }
+
+    footer {
+      padding: 25px;
+      text-align: center;
+      border-top: 1px solid #51412b;
+      color: #c9b48e;
+    }
+
+    dialog {
+      background: transparent;
+      border: 0;
+      color: #f4ead6;
+      max-width: 95%;
+      width: 460px;
+    }
+
+    dialog::backdrop { background: #000b; }
+
+    .dialog-card {
+      background: #241d13;
+      border: 1px solid #947443;
+      border-radius: 14px;
+      padding: 24px;
+      display: grid;
+      gap: 13px;
+    }
+
+    .dialog-card input, .dialog-card textarea,
+    .dialog-card select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border-radius: 7px;
+      border: 1px solid #80643c;
+      background: #17130d;
+      color: white;
+      margin-top: 6px;
+    }
+
+    .close-btn {
+      justify-self: end;
+      background: transparent;
+      color: white;
+      border: 0;
+      font-size: 25px;
+    }
+
+    .folder-stories { margin-top: 15px; }
+
+    @media(max-width:600px) {
+      .topbar { flex-wrap: wrap; }
+      .hero { padding: 35px 6%; }
+      .section { padding: 25px 5%; }
+    }
+  </style>
 </head>
 
 <body>
 
-  <!-- شاشة البداية -->
   <div id="splash" class="splash">
-    <img
-      class="splash-art"
+    <img class="splash-art"
       src="assets/splash-egypt.png"
       alt="مشهد تاريخي لمصر"
-    >
+      onerror="this.style.display='none'">
 
     <div class="splash-shade"></div>
 
     <div class="splash-content">
       <p class="eyebrow">رحلة عبر آلاف السنين</p>
-
       <h1>قصة عن مصر</h1>
-
-      <p class="sub">تاريخ • قصص • روايات</p>
-
+      <p>تاريخ • قصص • روايات</p>
       <p>تأليف وإعداد: الحسن محمد</p>
 
-      <button id="enterBtn" type="button" class="gold-btn">
-        ادخل إلى الحكاية
+      <button id="enterBtn" class="gold-btn" type="button">
+        ادخل إلى الحكاية ▶
       </button>
 
-      <button id="musicBtn" type="button" class="ghost-btn">
+      <br>
+
+      <button id="musicBtn" class="ghost-btn" type="button">
         ▶ تشغيل موسيقى البداية
       </button>
 
       <small>يمكنك كتم الموسيقى في أي وقت</small>
     </div>
 
-    <audio
-      id="introAudio"
+    <audio id="introAudio"
       src="assets/intro-music.m4a"
-      preload="metadata"
-      loop
-    ></audio>
+      preload="metadata" loop></audio>
   </div>
 
-  <!-- التطبيق الرئيسي -->
   <main id="app" class="app-shell hidden">
 
-    <!-- الشريط العلوي -->
     <header class="topbar">
-
-      <a class="brand" href="#top" aria-label="قصة عن مصر">
-        قصة عن مصر <span>𓂀</span>
-      </a>
+      <a class="brand" href="#top">قصة عن مصر 𓂀</a>
 
       <div class="top-actions">
-
-        <button id="langBtn" type="button" class="text-btn">
-          EN
-        </button>
-
-        <button id="loginBtn" type="button" class="outline-btn">
+        <button id="langBtn" class="text-btn" type="button">EN</button>
+        <button id="loginBtn" class="outline-btn" type="button">
           تسجيل الدخول
         </button>
-
       </div>
     </header>
 
-    <!-- الواجهة الرئيسية -->
     <section class="hero" id="top">
-
       <div class="hero-copy">
-
-        <p
-          class="eyebrow"
+        <p class="eyebrow"
           data-ar="من ذاكرة الأرض"
-          data-en="From the memory of the land"
-        >
-          من ذاكرة الأرض
-        </p>
+          data-en="From the memory of the land">من ذاكرة الأرض</p>
 
-        <h2
-          data-ar="كل عصر يروي حكاية"
-          data-en="Every era tells a story"
-        >
-          كل عصر يروي حكاية
-        </h2>
+        <h2 data-ar="كل عصر يروي حكاية"
+          data-en="Every era tells a story">كل عصر يروي حكاية</h2>
 
-        <p
-          data-ar="اكتشف تاريخ مصر وشخصياتها وحضارتها، من أقدم العصور إلى مصر الحديثة."
-          data-en="Explore Egypt's history, people and civilization, from ancient times to modern Egypt."
-        >
+        <p data-ar="اكتشف تاريخ مصر وشخصياتها وحضارتها، من أقدم العصور إلى مصر الحديثة."
+          data-en="Explore Egypt's history, people and civilization, from ancient times to modern Egypt.">
           اكتشف تاريخ مصر وشخصياتها وحضارتها، من أقدم العصور إلى مصر الحديثة.
         </p>
 
-        <a
-          class="gold-btn link-btn"
-          href="#eras"
-          data-ar="ابدأ الرحلة"
-          data-en="Start exploring"
-        >
-          ابدأ الرحلة
-        </a>
-
+        <a class="gold-btn link-btn" href="#eras"
+          data-ar="ابدأ الرحلة" data-en="Start exploring">ابدأ الرحلة</a>
       </div>
     </section>
 
-    <!-- مجلدات التاريخ -->
     <section class="section" id="eras">
-
       <div class="section-heading">
-
-        <div>
-          <p class="eyebrow">اكتشف</p>
-
-          <h2
-            data-ar="رحلة عبر العصور"
-            data-en="Journey through the eras"
-          >
-            رحلة عبر العصور
-          </h2>
-        </div>
-
-        <span
-          class="section-note"
-          data-ar="اختر حقبة لتبدأ"
-          data-en="Choose an era to begin"
-        >
-          اختر حقبة لتبدأ
-        </span>
-
+        <p class="eyebrow">اكتشف</p>
+        <h2 data-ar="رحلة عبر العصور"
+          data-en="Journey through the eras">رحلة عبر العصور</h2>
+        <p>اختر حقبة لتبدأ رحلتك التاريخية</p>
       </div>
 
       <div class="era-grid">
 
         <article class="era-card">
           <span>𓂀</span>
-          <h3 data-ar="مصر القديمة" data-en="Ancient Egypt">
-            مصر القديمة
-          </h3>
-          <p
-            data-ar="الفراعنة والأسرار والآثار"
-            data-en="Pharaohs, mysteries and monuments"
-          >
-            الفراعنة والأسرار والآثار
-          </p>
+          <h3 data-ar="مصر القديمة" data-en="Ancient Egypt">مصر القديمة</h3>
+          <p>الفراعنة والأسرار والآثار</p>
         </article>
 
         <article class="era-card">
           <span>⌘</span>
-          <h3
-            data-ar="العصر اليوناني والروماني"
-            data-en="Greek and Roman Egypt"
-          >
-            العصر اليوناني والروماني
-          </h3>
-          <p
-            data-ar="الإسكندرية وتلاقي الحضارات"
-            data-en="Alexandria and cultures meeting"
-          >
-            الإسكندرية وتلاقي الحضارات
-          </p>
+          <h3 data-ar="العصر اليوناني والروماني"
+            data-en="Greek and Roman Egypt">العصر اليوناني والروماني</h3>
+          <p>الإسكندرية وتلاقي الحضارات</p>
         </article>
 
         <article class="era-card">
           <span>✥</span>
-          <h3 data-ar="مصر القبطية" data-en="Coptic Egypt">
-            مصر القبطية
-          </h3>
-          <p
-            data-ar="تراث وعمارة وحكايات"
-            data-en="Heritage, architecture and stories"
-          >
-            تراث وعمارة وحكايات
-          </p>
+          <h3 data-ar="مصر القبطية" data-en="Coptic Egypt">مصر القبطية</h3>
+          <p>تراث وعمارة وحكايات</p>
         </article>
 
         <article class="era-card">
           <span>☾</span>
-          <h3 data-ar="مصر الإسلامية" data-en="Islamic Egypt">
-            مصر الإسلامية
-          </h3>
-          <p
-            data-ar="القاهرة والمساجد والمدارس"
-            data-en="Cairo, mosques and schools"
-          >
-            القاهرة والمساجد والمدارس
-          </p>
+          <h3 data-ar="مصر الإسلامية" data-en="Islamic Egypt">مصر الإسلامية</h3>
+          <p>القاهرة والمساجد والمدارس</p>
         </article>
 
         <article class="era-card">
           <span>⚜</span>
-          <h3 data-ar="العصر الحديث" data-en="Modern Egypt">
-            العصر الحديث
-          </h3>
-          <p
-            data-ar="تحولات صنعت مصر المعاصرة"
-            data-en="Changes that shaped modern Egypt"
-          >
-            تحولات صنعت مصر المعاصرة
-          </p>
+          <h3 data-ar="العصر الحديث" data-en="Modern Egypt">العصر الحديث</h3>
+          <p>تحولات صنعت مصر المعاصرة</p>
         </article>
 
         <article class="era-card">
           <span>✦</span>
-          <h3 data-ar="شخصيات مصرية" data-en="Egyptian Figures">
-            شخصيات مصرية
-          </h3>
-          <p
-            data-ar="أشخاص تركوا أثرًا في التاريخ"
-            data-en="People who left a mark on history"
-          >
-            أشخاص تركوا أثرًا في التاريخ
-          </p>
+          <h3 data-ar="شخصيات مصرية" data-en="Egyptian Figures">شخصيات مصرية</h3>
+          <p>أشخاص تركوا أثرًا في التاريخ</p>
         </article>
 
       </div>
     </section>
 
-    <!-- أحدث القصص -->
     <section class="section latest">
-
       <div class="section-heading">
-        <div>
-          <p class="eyebrow">من المكتبة</p>
-
-          <h2
-            data-ar="أحدث الحكايات"
-            data-en="Latest stories"
-          >
-            أحدث الحكايات
-          </h2>
-        </div>
+        <p class="eyebrow">من المكتبة</p>
+        <h2 data-ar="أحدث الحكايات" data-en="Latest stories">أحدث الحكايات</h2>
       </div>
 
       <div class="empty-state">
         <span>📜</span>
-
-        <h3
-          data-ar="الحكايات قادمة"
-          data-en="Stories are coming soon"
-        >
-          الحكايات قادمة
-        </h3>
-
-        <p
-          data-ar="هنا ستظهر القصص التي تضيفها من لوحة التحكم."
-          data-en="Stories you add from the admin dashboard will appear here."
-        >
-          هنا ستظهر القصص التي تضيفها من لوحة التحكم.
-        </p>
+        <h3>الحكايات قادمة</h3>
+        <p>هنا ستظهر القصص التي تنشرها من لوحة التحكم.</p>
       </div>
-
     </section>
 
-    <!-- نهاية الصفحة -->
     <footer>
       © تأليف وإعداد: الحسن محمد — قصة عن مصر
+      <span id="year"></span>
     </footer>
 
   </main>
 
-  <!-- نافذة الحسابات -->
   <dialog id="loginDialog"></dialog>
 
-  <!-- مكتبة Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- ملف تشغيل التطبيق -->
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 
 </body>
 </html>
