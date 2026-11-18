@@ -21,7 +21,7 @@ const QESSAT_SUPABASE_URL =
   'https://bhudyegwlztfslhkbdjf.supabase.co';
 
 const QESSAT_SUPABASE_KEY =
-  'sb_publishable_TcmwO6zoiB2UbpkbAIjofA_UGxcBLgD';
+  'sb_publishable_TcmO6zoiB2UbpkbAIjofA_UGxcBLgD';
 
 if (!window.supabase) {
   alert('مكتبة Supabase لم يتم تحميلها. راجع index.html');
@@ -98,6 +98,8 @@ if (langBtn) {
       loginBtn.textContent =
         lang === 'ar' ? 'تسجيل الدخول' : 'Log in';
     }
+
+    loadStories();
   });
 }
 
@@ -258,11 +260,12 @@ function showUserMenu() {
     <div class="dialog-card">
       <button class="close-btn" id="closeUser">×</button>
       <h2>حسابك</h2>
-      <p>${currentUser.email}</p>
+      <p></p>
       <button class="gold-btn" id="logoutBtn">تسجيل الخروج</button>
     </div>
   `;
 
+  loginDialog.querySelector('p').textContent = currentUser.email;
   loginDialog.showModal();
 
   document.getElementById('closeUser').onclick =
@@ -302,7 +305,6 @@ function showAdminPanel() {
     panel = document.createElement('section');
     panel.id = 'adminPanel';
     panel.className = 'section';
-
     app.appendChild(panel);
   }
 
@@ -363,11 +365,8 @@ function showAdminPanel() {
 
   panel.scrollIntoView({ behavior: 'smooth' });
 
-  document.getElementById('storyForm').onsubmit =
-    saveStory;
-
-  document.getElementById('adminLogout').onclick =
-    logoutUser;
+  document.getElementById('storyForm').onsubmit = saveStory;
+  document.getElementById('adminLogout').onclick = logoutUser;
 
   loadAdminStories();
 }
@@ -407,8 +406,8 @@ async function saveStory(event) {
   document.getElementById('storyForm').reset();
   document.getElementById('storyCategory').value = 'تاريخ مصر';
 
-  loadAdminStories();
-  loadStories();
+  await loadAdminStories();
+  await loadStories();
 }
 
 // تحميل القصص المنشورة
@@ -460,7 +459,7 @@ async function loadStories() {
   });
 }
 
-// تحميل قصص لوحة المدير
+// تحميل قصص لوحة المدير مع أزرار النشر والحذف
 async function loadAdminStories() {
   if (!isAdmin) return;
 
@@ -473,8 +472,7 @@ async function loadAdminStories() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    container.textContent =
-      'تعذر تحميل القصص: ' + error.message;
+    container.textContent = 'تعذر تحميل القصص: ' + error.message;
     return;
   }
 
@@ -495,6 +493,34 @@ async function loadAdminStories() {
     const status = document.createElement('p');
     status.textContent = story.published ? 'منشورة' : 'مسودة';
 
+    const publishButton = document.createElement('button');
+    publishButton.className = 'gold-btn';
+    publishButton.textContent = story.published
+      ? 'إرجاع إلى المسودات'
+      : 'نشر القصة';
+
+    publishButton.onclick = async () => {
+      publishButton.disabled = true;
+      publishButton.textContent = 'جارٍ التحديث...';
+
+      const { error: updateError } = await qessatClient
+        .from('stories')
+        .update({ published: !story.published })
+        .eq('id', story.id);
+
+      if (updateError) {
+        alert('حدث خطأ: ' + updateError.message);
+        publishButton.disabled = false;
+        publishButton.textContent = story.published
+          ? 'إرجاع إلى المسودات'
+          : 'نشر القصة';
+        return;
+      }
+
+      await loadAdminStories();
+      await loadStories();
+    };
+
     const deleteButton = document.createElement('button');
     deleteButton.className = 'outline-btn';
     deleteButton.textContent = 'حذف القصة';
@@ -508,14 +534,14 @@ async function loadAdminStories() {
         .eq('id', story.id);
 
       if (deleteError) {
-        alert(deleteError.message);
+        alert('حدث خطأ: ' + deleteError.message);
       } else {
-        loadAdminStories();
-        loadStories();
+        await loadAdminStories();
+        await loadStories();
       }
     };
 
-    item.append(title, status, deleteButton);
+    item.append(title, status, publishButton, deleteButton);
     container.appendChild(item);
   });
 }
