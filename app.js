@@ -5,7 +5,8 @@
 ===================================== */
 
 const SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_Tcmw6zoiB2UbpkbAIjofA_UGxcBLgD';
+
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJodWR5ZWd3bHp0ZnNsaGtiZGpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwMzA0NjYsImV4cCI6MjExMDYwNjQ2Nn0.NPEPXXZ5RL0LHHAcjEdE4ljEK2s_ekPjtPSfJDzTktI';
 
 const $ = id => document.getElementById(id);
 
