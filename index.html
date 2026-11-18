@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#17130d" />
+  <meta name="description" content="قصة عن مصر: تاريخ وقصص وروايات من كل العصور." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+  <title>قصة عن مصر | Qessat Masr</title>
+</head>
+<body>
+  <div id="splash" class="splash">
+    <img class="splash-art" src="assets/splash-egypt.png" alt="مشهد تاريخي لمصر" />
+    <div class="splash-shade"></div>
+    <div class="splash-content">
+      <p class="eyebrow">رحلة عبر آلاف السنين</p>
+      <h1>قصة عن مصر</h1>
+      <p class="sub">تاريخ • قصص • روايات</p>
+      <button id="enterBtn" class="gold-btn">ادخل إلى الحكاية</button>
+      <button id="musicBtn" class="ghost-btn" aria-pressed="false">▶ تشغيل موسيقى البداية</button>
+      <small>يمكنك كتم الموسيقى في أي وقت</small>
+    </div>
+    <audio id="introAudio" src="assets/intro-music.m4a" preload="metadata"></audio>
+  </div>
+
+  <main id="app" class="app-shell hidden">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="قصة عن مصر">قصة عن مصر <span>𓂀</span></a>
+      <div class="top-actions">
+        <button id="langBtn" class="text-btn">EN</button>
+        <button id="loginBtn" class="outline-btn">تسجيل الدخول</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow" data-ar="من ذاكرة الأرض" data-en="From the memory of the land">من ذاكرة الأرض</p>
+        <h2 data-ar="كل عصر يروي حكاية" data-en="Every era tells a story">كل عصر يروي حكاية</h2>
+        <p data-ar="اكتشف تاريخ مصر وشخصياتها وحضارتها، من أقدم العصور إلى مصر الحديثة." data-en="Explore Egypt's history, people and civilization, from ancient times to modern Egypt.">اكتشف تاريخ مصر وشخصياتها وحضارتها، من أقدم العصور إلى مصر الحديثة.</p>
+        <a class="gold-btn link-btn" href="#eras" data-ar="ابدأ الرحلة" data-en="Start exploring">ابدأ الرحلة</a>
+      </div>
+    </section>
+
+    <section class="section" id="eras">
+      <div class="section-heading">
+        <div><p class="eyebrow">اكتشف</p><h2 data-ar="رحلة عبر العصور" data-en="Journey through the eras">رحلة عبر العصور</h2></div>
+        <span class="section-note" data-ar="اختر حقبة لتبدأ" data-en="Choose an era to begin">اختر حقبة لتبدأ</span>
+      </div>
+      <div class="era-grid">
+        <article class="era-card"><span>𓂀</span><h3 data-ar="مصر القديمة" data-en="Ancient Egypt">مصر القديمة</h3><p data-ar="الفراعنة والأسرار والآثار" data-en="Pharaohs, mysteries and monuments">الفراعنة والأسرار والآثار</p></article>
+        <article class="era-card"><span>⌘</span><h3 data-ar="العصر اليوناني والروماني" data-en="Greek and Roman Egypt">العصر اليوناني والروماني</h3><p data-ar="الإسكندرية وتلاقي الحضارات" data-en="Alexandria and cultures meeting">الإسكندرية وتلاقي الحضارات</p></article>
+        <article class="era-card"><span>✥</span><h3 data-ar="مصر القبطية" data-en="Coptic Egypt">مصر القبطية</h3><p data-ar="تراث وعمارة وحكايات" data-en="Heritage, architecture and stories">تراث وعمارة وحكايات</p></article>
+        <article class="era-card"><span>☾</span><h3 data-ar="مصر الإسلامية" data-en="Islamic Egypt">مصر الإسلامية</h3><p data-ar="القاهرة والمساجد والمدارس" data-en="Cairo, mosques and schools">القاهرة والمساجد والمدارس</p></article>
+        <article class="era-card"><span>⚜</span><h3 data-ar="العصر الحديث" data-en="Modern Egypt">العصر الحديث</h3><p data-ar="تحولات صنعت مصر المعاصرة" data-en="Changes that shaped modern Egypt">تحولات صنعت مصر المعاصرة</p></article>
+        <article class="era-card"><span>✦</span><h3 data-ar="شخصيات مصرية" data-en="Egyptian figures">شخصيات مصرية</h3><p data-ar="أشخاص تركوا أثرًا في التاريخ" data-en="People who left a mark on history">أشخاص تركوا أثرًا في التاريخ</p></article>
+      </div>
+    </section>
+
+    <section class="section latest">
+      <div class="section-heading"><div><p class="eyebrow">من المكتبة</p><h2 data-ar="أحدث الحكايات" data-en="Latest stories">أحدث الحكايات</h2></div></div>
+      <div class="empty-state"><span>📜</span><h3 data-ar="الحكايات قادمة" data-en="Stories are coming soon">الحكايات قادمة</h3><p data-ar="هنا ستظهر القصص التي تضيفها من لوحة التحكم بعد ربط قاعدة البيانات." data-en="Stories you add from the admin dashboard will appear here after the database is connected.">هنا ستظهر القصص التي تضيفها من لوحة التحكم بعد ربط قاعدة البيانات.</p></div>
+    </section>
+
+    <footer>قصة عن مصر © <span id="year"></span> — حكايات من تاريخ وطن</footer>
+  </main>
+
+  <dialog id="loginDialog">
+    <form method="dialog" class="dialog-card">
+      <button class="close-btn" aria-label="إغلاق">×</button>
+      <p class="eyebrow">حسابك</p><h2>تسجيل الدخول</h2>
+      <p class="muted">واجهة تجريبية — سنربط تسجيل الحسابات الآمن في الخطوة التالية.</p>
+      <label>البريد الإلكتروني<input type="email" placeholder="name@example.com" disabled></label>
+      <label>كلمة المرور<input type="password" placeholder="••••••••" disabled></label>
+      <button class="gold-btn" disabled>تسجيل الدخول قريبًا</button>
+    </form>
+  </dialog>
+  <script src="app.js"></script>
+</body>
+</html>
