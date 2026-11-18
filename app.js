@@ -1,28 +1,30 @@
 
 /* =====================================
-   QESSAT MASR - COMPLETE APP
-   Supabase Authentication & Admin
+   QESSAT MASR - MAIN APP
+   Supabase Auth & Admin
 ===================================== */
 
-const splash = document.getElementById('splash');
-const app = document.getElementById('app');
-const audio = document.getElementById('introAudio');
-const musicBtn = document.getElementById('musicBtn');
-const enterBtn = document.getElementById('enterBtn');
-const loginDialog = document.getElementById('loginDialog');
-const loginBtn = document.getElementById('loginBtn');
-const langBtn = document.getElementById('langBtn');
+const SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TcmwO6zoiB2UbpkbAIjofA_UGxcBLgD';
+
+const $ = id => document.getElementById(id);
+
+const splash = $('splash');
+const app = $('app');
+const audio = $('introAudio');
+const musicBtn = $('musicBtn');
+const enterBtn = $('enterBtn');
+const loginDialog = $('loginDialog');
+const loginBtn = $('loginBtn');
+const langBtn = $('langBtn');
 
 let lang = 'ar';
 let currentUser = null;
 let isAdmin = false;
 
-const SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_TcmwO6zoiB2UbpkbAIjofA_UGxcBLgD';
-
 if (!window.supabase) {
-  alert('خطأ: مكتبة Supabase غير موجودة في index.html');
-  throw new Error('Supabase missing');
+  alert('مكتبة Supabase غير محملة. راجع index.html');
+  throw new Error('Supabase library missing');
 }
 
 const db = window.supabase.createClient(
@@ -30,10 +32,17 @@ const db = window.supabase.createClient(
   SUPABASE_KEY
 );
 
-const $ = id => document.getElementById(id);
+/* السنة */
 
 if ($('year')) {
   $('year').textContent = new Date().getFullYear();
+}
+
+/* رسائل الأخطاء */
+
+function showError(message) {
+  console.error(message);
+  alert(message);
 }
 
 /* الموسيقى */
@@ -48,8 +57,8 @@ if (musicBtn && audio) {
         audio.pause();
         musicBtn.textContent = '▶ تشغيل الموسيقى';
       }
-    } catch (e) {
-      alert('تعذر تشغيل الموسيقى');
+    } catch (error) {
+      showError('تعذر تشغيل الموسيقى');
     }
   });
 }
@@ -62,17 +71,15 @@ if (enterBtn) {
     app?.classList.remove('hidden');
     window.scrollTo(0, 0);
 
-    if (audio) {
-      audio.play().then(() => {
-        if (musicBtn) musicBtn.textContent = 'Ⅱ إيقاف الموسيقى';
-      }).catch(() => {});
-    }
+    audio?.play().then(() => {
+      if (musicBtn) musicBtn.textContent = 'Ⅱ إيقاف الموسيقى';
+    }).catch(() => {});
 
     await loadStories();
   });
 }
 
-/* تغيير اللغة */
+/* اللغة */
 
 if (langBtn) {
   langBtn.addEventListener('click', async () => {
@@ -92,7 +99,7 @@ if (langBtn) {
   });
 }
 
-/* تسجيل الدخول وإنشاء الحساب */
+/* تسجيل الدخول */
 
 function showLogin() {
   if (!loginDialog) return;
@@ -112,6 +119,7 @@ function showLogin() {
       </label>
 
       <button class="gold-btn" type="submit">تسجيل الدخول</button>
+
       <button class="outline-btn" type="button" id="registerBtn">
         إنشاء حساب جديد
       </button>
@@ -127,23 +135,24 @@ function showLogin() {
   $('registerBtn').onclick = async () => {
     const email = $('authEmail').value.trim();
     const password = $('authPassword').value;
-    const msg = $('authMessage');
+    const message = $('authMessage');
 
     if (!email || password.length < 6) {
-      msg.textContent = 'اكتب بريدًا صحيحًا وكلمة مرور من 6 أحرف على الأقل';
+      message.textContent = 'اكتب بريدًا صحيحًا وكلمة مرور من 6 أحرف على الأقل';
       return;
     }
 
-    msg.textContent = 'جارٍ إنشاء الحساب...';
+    message.textContent = 'جارٍ إنشاء الحساب...';
 
-    const { error } = await db.auth.signUp({
-      email,
-      password
-    });
+    try {
+      const { error } = await db.auth.signUp({ email, password });
 
-    msg.textContent = error
-      ? 'خطأ: ' + error.message
-      : 'تم إنشاء الحساب. إذا طُلب تأكيد البريد، راجع بريدك الإلكتروني.';
+      message.textContent = error
+        ? 'خطأ: ' + error.message
+        : 'تم إنشاء الحساب. راجع بريدك إذا طُلب التأكيد.';
+    } catch (error) {
+      message.textContent = 'تعذر الاتصال: ' + error.message;
+    }
   };
 
   $('authForm').onsubmit = async event => {
@@ -151,30 +160,34 @@ function showLogin() {
 
     const email = $('authEmail').value.trim();
     const password = $('authPassword').value;
-    const msg = $('authMessage');
+    const message = $('authMessage');
 
-    msg.textContent = 'جارٍ تسجيل الدخول...';
+    message.textContent = 'جارٍ تسجيل الدخول...';
 
-    const { data, error } = await db.auth.signInWithPassword({
-      email,
-      password
-    });
+    try {
+      const { data, error } = await db.auth.signInWithPassword({
+        email,
+        password
+      });
 
-    if (error) {
-      msg.textContent = 'تعذر الدخول: ' + error.message;
-      return;
-    }
+      if (error) {
+        message.textContent = 'تعذر الدخول: ' + error.message;
+        return;
+      }
 
-    currentUser = data.user;
-    await checkAdmin();
+      currentUser = data.user;
+      await checkAdmin();
 
-    loginDialog.close();
-    updateLoginButton();
+      loginDialog.close();
+      updateLoginButton();
 
-    if (isAdmin) {
-      showAdminPanel();
-    } else {
-      alert('تم تسجيل الدخول بنجاح');
+      if (isAdmin) {
+        showAdminPanel();
+      } else {
+        alert('تم تسجيل الدخول بنجاح');
+      }
+    } catch (error) {
+      message.textContent = 'خطأ اتصال: ' + error.message;
     }
   };
 }
@@ -183,36 +196,39 @@ function showLogin() {
 
 if (loginBtn) {
   loginBtn.addEventListener('click', () => {
-    if (!currentUser) {
-      showLogin();
-    } else if (isAdmin) {
-      showAdminPanel();
-    } else {
-      showUserMenu();
-    }
+    if (!currentUser) showLogin();
+    else if (isAdmin) showAdminPanel();
+    else showUserMenu();
   });
 }
 
-/* فحص المدير */
+/* فحص صلاحية المدير */
 
 async function checkAdmin() {
-  const { data: { user }, error: userError } = await db.auth.getUser();
+  try {
+    const { data: { user }, error: authError } = await db.auth.getUser();
 
-  if (userError || !user) {
-    currentUser = null;
+    if (authError || !user) {
+      currentUser = null;
+      isAdmin = false;
+      return;
+    }
+
+    currentUser = user;
+
+    const { data, error } = await db
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    isAdmin = !error && !!data;
+
+    if (error) console.error('Admin check:', error.message);
+  } catch (error) {
+    console.error(error);
     isAdmin = false;
-    return;
   }
-
-  currentUser = user;
-
-  const { data, error } = await db
-    .from('admin_users')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  isAdmin = !error && !!data;
 }
 
 /* تحديث زر الحساب */
@@ -225,7 +241,7 @@ function updateLoginButton() {
     : (lang === 'ar' ? 'تسجيل الدخول' : 'Log in');
 }
 
-/* حساب المستخدم */
+/* قائمة المستخدم */
 
 function showUserMenu() {
   if (!loginDialog) return;
@@ -252,7 +268,7 @@ async function logoutUser() {
   const { error } = await db.auth.signOut();
 
   if (error) {
-    alert(error.message);
+    showError(error.message);
     return;
   }
 
@@ -339,7 +355,6 @@ function showAdminPanel() {
   $('refreshStories').onclick = loadAdminStories;
 
   panel.scrollIntoView({ behavior: 'smooth' });
-
   loadAdminStories();
 }
 
@@ -348,13 +363,10 @@ function showAdminPanel() {
 async function saveStory(event) {
   event.preventDefault();
 
-  if (!isAdmin) {
-    alert('غير مسموح');
-    return;
-  }
+  if (!isAdmin) return alert('غير مسموح');
 
-  const msg = $('storyMessage');
-  msg.textContent = 'جارٍ حفظ القصة...';
+  const message = $('storyMessage');
+  message.textContent = 'جارٍ حفظ القصة...';
 
   const story = {
     title_ar: $('storyTitleAr').value.trim(),
@@ -369,11 +381,11 @@ async function saveStory(event) {
   const { error } = await db.from('stories').insert([story]);
 
   if (error) {
-    msg.textContent = 'فشل الحفظ: ' + error.message;
+    message.textContent = 'فشل الحفظ: ' + error.message;
     return;
   }
 
-  msg.textContent = 'تم حفظ القصة بنجاح';
+  message.textContent = 'تم حفظ القصة بنجاح';
   $('storyForm').reset();
   $('storyCategory').value = 'تاريخ مصر';
 
@@ -381,7 +393,7 @@ async function saveStory(event) {
   await loadStories();
 }
 
-/* عرض القصص المنشورة */
+/* القصص المنشورة */
 
 async function loadStories() {
   const { data, error } = await db
@@ -391,7 +403,7 @@ async function loadStories() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('خطأ تحميل القصص:', error.message);
+    console.error('Stories:', error.message);
     return;
   }
 
@@ -431,10 +443,117 @@ async function loadStories() {
   });
 }
 
-/* عرض قصص الإدارة وأزرار النشر والحذف */
+/* قصص الإدارة */
 
 async function loadAdminStories() {
   if (!isAdmin) return;
+
+  const container = $('adminStories');
+  if (!container) return;
+
+  container.textContent = 'جارٍ تحميل القصص...';
+
+  const { data, error } = await db
+    .from('stories')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    container.textContent = 'خطأ تحميل القصص: ' + error.message;
+    return;
+  }
+
+  container.innerHTML = '';
+
+  if (!data || data.length === 0) {
+    container.textContent = 'لا توجد قصص حتى الآن';
+    return;
+  }
+
+  data.forEach(story => {
+    const item = document.createElement('article');
+    item.className = 'era-card';
+
+    const title = document.createElement('h3');
+    title.textContent = story.title_ar;
+
+    const status = document.createElement('p');
+    status.textContent = story.published ? 'الحالة: منشورة' : 'الحالة: مسودة';
+
+    const publishButton = document.createElement('button');
+    publishButton.type = 'button';
+    publishButton.className = 'gold-btn';
+    publishButton.textContent = story.published
+      ? 'إرجاع إلى المسودات'
+      : 'نشر القصة';
+
+    publishButton.onclick = async () => {
+      publishButton.disabled = true;
+      publishButton.textContent = 'جارٍ التحديث...';
+
+      const { data: updated, error: updateError } = await db
+        .from('stories')
+        .update({ published: !story.published })
+        .eq('id', story.id)
+        .select('id, published');
+
+      if (updateError || !updated || updated.length === 0) {
+        alert('تعذر تغيير حالة القصة: ' +
+          (updateError?.message || 'لم يتم تحديث أي سجل'));
+        publishButton.disabled = false;
+        publishButton.textContent = story.published
+          ? 'إرجاع إلى المسودات'
+          : 'نشر القصة';
+        return;
+      }
+
+      await loadAdminStories();
+      await loadStories();
+    };
+
+    const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
+    deleteButton.className = 'outline-btn';
+    deleteButton.textContent = 'حذف القصة';
+
+    deleteButton.onclick = async () => {
+      if (!confirm('هل تريد حذف هذه القصة نهائيًا؟')) return;
+
+      const { error: deleteError } = await db
+        .from('stories')
+        .delete()
+        .eq('id', story.id);
+
+      if (deleteError) {
+        alert('تعذر الحذف: ' + deleteError.message);
+        return;
+      }
+
+      await loadAdminStories();
+      await loadStories();
+    };
+
+    item.append(title, status, publishButton, deleteButton);
+    container.appendChild(item);
+  });
+}
+
+/* استعادة الجلسة */
+
+async function initializeApp() {
+  try {
+    await checkAdmin();
+    updateLoginButton();
+    await loadStories();
+  } catch (error) {
+    console.error('Initialization error:', error);
+  }
+}
+
+initializeApp();
+
+console.log('Qessat Masr initialized');
+ if (!isAdmin) return;
 
   const container = $('adminStories');
   if (!container) return;
