@@ -1,7 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
-:root{--bg:#12100c;--panel:#1c1912;--gold:#d7ad5a;--gold2:#f1d796;--text:#f5eddd;--muted:#b9ad98}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:'Cairo',system-ui,sans-serif}button,a{font:inherit}.hidden{display:none!important}
-.splash{position:fixed;inset:0;z-index:10;background:#090806;display:grid;place-items:center;overflow:hidden}.splash-art{position:absolute;width:100%;height:100%;object-fit:cover;object-position:center}.splash-shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(5,4,3,.88),rgba(5,4,3,.12) 65%,rgba(5,4,3,.3))}.splash-content{position:relative;text-align:center;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;text-shadow:0 2px 12px #000}.splash-content h1{font-size:clamp(2.2rem,8vw,4.5rem);margin:0;color:var(--gold2)}.sub{margin:0 0 16px;color:#fff}.eyebrow{color:var(--gold);letter-spacing:1px;font-weight:700;margin:0 0 8px}.gold-btn{border:0;border-radius:12px;padding:12px 24px;background:linear-gradient(135deg,#f1d796,#b68131);color:#21170a;font-weight:800;text-decoration:none;cursor:pointer}.ghost-btn,.outline-btn,.text-btn{background:rgba(15,12,8,.65);border:1px solid #b88c45;color:var(--gold2);border-radius:10px;padding:9px 15px;cursor:pointer}.splash small{color:#e4d6bd}.app-shell{max-width:1100px;margin:auto;padding:0 20px}.topbar{height:76px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #3a3020}.brand{color:var(--gold2);font-size:1.35rem;font-weight:800;text-decoration:none}.brand span{color:var(--gold);margin-inline-start:6px}.top-actions{display:flex;gap:10px;align-items:center}.hero{margin-top:24px;min-height:320px;border:1px solid #514027;border-radius:22px;overflow:hidden;display:flex;align-items:center;padding:clamp(24px,6vw,58px);background:linear-gradient(90deg,rgba(10,9,7,.96),rgba(10,9,7,.55)),url('assets/splash-egypt.png') center 42%/cover}.hero-copy{max-width:520px}.hero h2{font-size:clamp(2rem,6vw,3.5rem);line-height:1.2;color:var(--gold2);margin:6px 0 14px}.hero p:not(.eyebrow){color:#e2d6c2;line-height:1.9}.link-btn{display:inline-block;margin-top:12px}.section{padding:48px 0 12px}.section-heading{display:flex;align-items:end;justify-content:space-between;margin-bottom:20px}.section-heading h2{margin:0;color:var(--gold2);font-size:1.8rem}.section-note,.muted{color:var(--muted)}.era-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.era-card{background:linear-gradient(145deg,#242016,#17140f);border:1px solid #4a3a22;border-radius:16px;padding:20px;min-height:150px}.era-card span{font-size:1.7rem;color:var(--gold)}.era-card h3{color:var(--gold2);margin:8px 0 3px}.era-card p{color:var(--muted);margin:0;font-size:.9rem}.empty-state{text-align:center;padding:36px 18px;background:#1b1812;border:1px dashed #65502d;border-radius:16px}.empty-state span{font-size:2rem}.empty-state h3{color:var(--gold2);margin:8px}.empty-state p{color:var(--muted);margin:0}footer{text-align:center;color:#968a76;padding:40px 0 24px;font-size:.85rem}dialog{border:1px solid #80602e;border-radius:18px;background:#1b1812;color:var(--text);max-width:420px;width:calc(100% - 30px)}dialog::backdrop{background:#000b}.dialog-card{padding:24px;display:grid;gap:12px}.dialog-card h2{margin:0;color:var(--gold2)}.dialog-card label{display:grid;gap:6px;color:var(--muted)}.dialog-card input{padding:12px;border-radius:9px;border:1px solid #514027;background:#100e0a;color:white}.close-btn{justify-self:end;background:none;border:0;color:var(--gold2);font-size:1.6rem;cursor:pointer}
-[dir="ltr"] .hero{text-align:left}
-@media(max-width:700px){.era-grid{grid-template-columns:repeat(2,1fr)}.hero{min-height:350px}.section-heading{align-items:start;gap:8px;flex-direction:column}.topbar{height:68px}.brand{font-size:1.1rem}}
-@media(max-width:420px){.era-grid{grid-template-columns:1fr}.app-shell{padding:0 14px}.top-actions{gap:5px}.outline-btn{padding:7px 9px}}
+
+/* Cinematic night splash */
+.splash {
+  background: #050914;
+}
+
+.splash-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  filter: brightness(.62) contrast(1.15) saturate(.9);
+  transform: scale(1.03);
+}
+
+.splash-shade {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(3,8,20,.35),
+      rgba(3,8,20,.12) 35%,
+      rgba(3,5,12,.88) 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(5,12,28,.25),
+      transparent,
+      rgba(5,12,28,.25)
+    );
+}
+
+.splash-content {
+  width: 100%;
+  padding: 24px 18px;
+}
+
+.splash-content h1 {
+  color: #f5d58b;
+  text-shadow: 0 0 25px rgba(215,173,90,.45);
+}
+
+.gold-btn {
+  box-shadow: 0 0 22px rgba(215,173,90,.25);
+}
+
+@media (max-width: 600px) {
+  .splash-art {
+    object-position: center center;
+  }
+
+  .splash-content {
+    gap: 15px;
+  }
+}
