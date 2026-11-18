@@ -10,9 +10,13 @@
   --muted: #b9ad98;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;
@@ -21,10 +25,15 @@ body {
   font-family: 'Cairo', system-ui, sans-serif;
 }
 
-button, a { font: inherit; }
+button, a {
+  font: inherit;
+}
 
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
 
+/* شاشة البداية */
 .splash {
   position: fixed;
   inset: 0;
@@ -96,7 +105,9 @@ button, a { font: inherit; }
   box-shadow: 0 0 22px rgba(215,173,90,.25);
 }
 
-.ghost-btn, .outline-btn, .text-btn {
+.ghost-btn,
+.outline-btn,
+.text-btn {
   background: rgba(15,12,8,.65);
   border: 1px solid #b88c45;
   color: var(--gold2);
@@ -105,8 +116,11 @@ button, a { font: inherit; }
   cursor: pointer;
 }
 
-.splash small { color: #e4d6bd; }
+.splash small {
+  color: #e4d6bd;
+}
 
+/* الصفحة الرئيسية */
 .app-shell {
   max-width: 1100px;
   margin: auto;
@@ -139,6 +153,7 @@ button, a { font: inherit; }
   align-items: center;
 }
 
+/* الواجهة الرئيسية */
 .hero {
   margin-top: 24px;
   min-height: 320px;
@@ -153,7 +168,9 @@ button, a { font: inherit; }
     url('assets/splash-egypt.png') center 42%/cover;
 }
 
-.hero-copy { max-width: 520px; }
+.hero-copy {
+  max-width: 520px;
+}
 
 .hero h2 {
   font-size: clamp(2rem,6vw,3.5rem);
@@ -172,7 +189,10 @@ button, a { font: inherit; }
   margin-top: 12px;
 }
 
-.section { padding: 48px 0 12px; }
+/* العصور التاريخية */
+.section {
+  padding: 48px 0 12px;
+}
 
 .section-heading {
   display: flex;
@@ -187,7 +207,10 @@ button, a { font: inherit; }
   font-size: 1.8rem;
 }
 
-.section-note, .muted { color: var(--muted); }
+.section-note,
+.muted {
+  color: var(--muted);
+}
 
 .era-grid {
   display: grid;
@@ -219,6 +242,7 @@ button, a { font: inherit; }
   font-size: .9rem;
 }
 
+/* القصص */
 .empty-state {
   text-align: center;
   padding: 36px 18px;
@@ -227,7 +251,9 @@ button, a { font: inherit; }
   border-radius: 16px;
 }
 
-.empty-state span { font-size: 2rem; }
+.empty-state span {
+  font-size: 2rem;
+}
 
 .empty-state h3 {
   color: var(--gold2);
@@ -239,6 +265,7 @@ button, a { font: inherit; }
   margin: 0;
 }
 
+/* أسفل الصفحة */
 footer {
   text-align: center;
   color: #968a76;
@@ -246,6 +273,7 @@ footer {
   font-size: .85rem;
 }
 
+/* نافذة تسجيل الدخول */
 dialog {
   border: 1px solid #80602e;
   border-radius: 18px;
@@ -255,7 +283,9 @@ dialog {
   width: calc(100% - 30px);
 }
 
-dialog::backdrop { background: #000b; }
+dialog::backdrop {
+  background: #000b;
+}
 
 .dialog-card {
   padding: 24px;
@@ -291,27 +321,55 @@ dialog::backdrop { background: #000b; }
   cursor: pointer;
 }
 
-[dir="ltr"] .hero { text-align: left; }
+[dir="ltr"] .hero {
+  text-align: left;
+}
 
+/* تنسيق الموبايل */
 @media(max-width:700px) {
-  .era-grid { grid-template-columns: repeat(2,1fr); }
-  .hero { min-height: 350px; }
+  .era-grid {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+  .hero {
+    min-height: 350px;
+  }
+
   .section-heading {
     align-items: start;
     gap: 8px;
     flex-direction: column;
   }
-  .topbar { height: 68px; }
-  .brand { font-size: 1.1rem; }
+
+  .topbar {
+    height: 68px;
+  }
+
+  .brand {
+    font-size: 1.1rem;
+  }
 }
 
 @media(max-width:420px) {
-  .era-grid { grid-template-columns: 1fr; }
-  .app-shell { padding: 0 14px; }
-  .top-actions { gap: 5px; }
-  .outline-btn { padding: 7px 9px; }
+  .era-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell {
+    padding: 0 14px;
+  }
+
+  .top-actions {
+    gap: 5px;
+  }
+
+  .outline-btn {
+    padding: 7px 9px;
+  }
 }
 
 @media(max-width:600px) {
-  .splash-content { gap: 15px; }
+  .splash-content {
+    gap: 15px;
+  }
 }
