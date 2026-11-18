@@ -79,3 +79,109 @@
   <script src="app.js"></script>
 </body>
 </html>
+
+/* ===== QESSAT MASR - SUPABASE CONNECTION ===== */
+
+const QESSAT_SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
+
+const QESSAT_SUPABASE_KEY = 'sb_publishable_TcmwO6zoiB2UbpkbAIjofA_UGxcBLgD';
+
+const qessatClient = window.supabase.createClient(
+  QESSAT_SUPABASE_URL,
+  QESSAT_SUPABASE_KEY
+);
+
+// التحقق من المستخدم وصلاحية المدير
+async function qessatCheckAdmin() {
+  const { data: { user }, error } =
+    await qessatClient.auth.getUser();
+
+  if (error || !user) {
+    return { user: null, isAdmin: false };
+  }
+
+  const { data, error: adminError } = await qessatClient
+    .from('admin_users')
+    .select('user_id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  return {
+    user,
+    isAdmin: !adminError && !!data
+  };
+}
+
+// تسجيل الدخول
+async function qessatLogin(email, password) {
+  return await qessatClient.auth.signInWithPassword({
+    email,
+    password
+  });
+}
+
+// إنشاء حساب زائر
+async function qessatRegister(email, password) {
+  return await qessatClient.auth.signUp({
+    email,
+    password
+  });
+}
+
+// تسجيل الخروج
+async function qessatLogout() {
+  return await qessatClient.auth.signOut();
+}
+
+// جلب القصص المنشورة
+async function qessatGetStories() {
+  return await qessatClient
+    .from('stories')
+    .select('*')
+    .eq('published', true)
+    .order('created_at', { ascending: false });
+}
+
+// إضافة قصة بواسطة المدير فقط
+async function qessatAddStory(story) {
+  const { isAdmin } = await qessatCheckAdmin();
+
+  if (!isAdmin) {
+    throw new Error('غير مسموح: هذه العملية للمدير فقط');
+  }
+
+  return await qessatClient
+    .from('stories')
+    .insert([story])
+    .select();
+}
+
+// تعديل قصة
+async function qessatUpdateStory(id, changes) {
+  const { isAdmin } = await qessatCheckAdmin();
+
+  if (!isAdmin) {
+    throw new Error('غير مسموح: هذه العملية للمدير فقط');
+  }
+
+  return await qessatClient
+    .from('stories')
+    .update(changes)
+    .eq('id', id);
+}
+
+// حذف قصة
+async function qessatDeleteStory(id) {
+  const { isAdmin } = await qessatCheckAdmin();
+
+  if (!isAdmin) {
+    throw new Error('غير مسموح: هذه العملية للمدير فقط');
+  }
+
+  return await qessatClient
+    .from('stories')
+    .delete()
+    .eq('id', id);
+}
+
+console.log('Qessat Masr database connection initialized');
