@@ -1,6 +1,6 @@
 
 /* =====================================
-   QESSAT MASR - MAIN APP
+   QESSAT MASR - COMPLETE APP
    Supabase Authentication & Admin
 ===================================== */
 
@@ -17,46 +17,45 @@ let lang = 'ar';
 let currentUser = null;
 let isAdmin = false;
 
-const QESSAT_SUPABASE_URL =
-  'https://bhudyegwlztfslhkbdjf.supabase.co';
-
-const QESSAT_SUPABASE_KEY =
-  'sb_publishable_TcmO6zoiB2UbpkbAIjofA_UGxcBLgD';
+const SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_TcmwO6zoiB2UbpkbAIjofA_UGxcBLgD';
 
 if (!window.supabase) {
-  alert('مكتبة Supabase لم يتم تحميلها. راجع index.html');
-  throw new Error('Supabase library missing');
+  alert('خطأ: مكتبة Supabase غير موجودة في index.html');
+  throw new Error('Supabase missing');
 }
 
-const qessatClient = window.supabase.createClient(
-  QESSAT_SUPABASE_URL,
-  QESSAT_SUPABASE_KEY
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
 );
 
-// السنة
-const yearElement = document.getElementById('year');
-if (yearElement) {
-  yearElement.textContent = new Date().getFullYear();
+const $ = id => document.getElementById(id);
+
+if ($('year')) {
+  $('year').textContent = new Date().getFullYear();
 }
 
-// الموسيقى
+/* الموسيقى */
+
 if (musicBtn && audio) {
   musicBtn.addEventListener('click', async () => {
-    if (audio.paused) {
-      try {
+    try {
+      if (audio.paused) {
         await audio.play();
         musicBtn.textContent = 'Ⅱ إيقاف الموسيقى';
-      } catch (error) {
-        console.error(error);
+      } else {
+        audio.pause();
+        musicBtn.textContent = '▶ تشغيل الموسيقى';
       }
-    } else {
-      audio.pause();
-      musicBtn.textContent = '▶ تشغيل الموسيقى';
+    } catch (e) {
+      alert('تعذر تشغيل الموسيقى');
     }
   });
 }
 
-// الدخول للموقع
+/* دخول الموقع */
+
 if (enterBtn) {
   enterBtn.addEventListener('click', async () => {
     splash?.classList.add('hidden');
@@ -64,177 +63,150 @@ if (enterBtn) {
     window.scrollTo(0, 0);
 
     if (audio) {
-      try {
-        await audio.play();
-        if (musicBtn) {
-          musicBtn.textContent = 'Ⅱ إيقاف الموسيقى';
-        }
-      } catch (error) {
-        console.log('تعذر تشغيل الموسيقى');
-      }
+      audio.play().then(() => {
+        if (musicBtn) musicBtn.textContent = 'Ⅱ إيقاف الموسيقى';
+      }).catch(() => {});
     }
 
-    loadStories();
+    await loadStories();
   });
 }
 
-// تغيير اللغة
+/* تغيير اللغة */
+
 if (langBtn) {
-  langBtn.addEventListener('click', () => {
+  langBtn.addEventListener('click', async () => {
     lang = lang === 'ar' ? 'en' : 'ar';
 
     document.documentElement.lang = lang;
-    document.documentElement.dir =
-      lang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
 
     document.querySelectorAll('[data-ar]').forEach(el => {
-      const translation = el.dataset[lang];
-      if (translation) el.textContent = translation;
+      const value = el.dataset[lang];
+      if (value) el.textContent = value;
     });
 
     langBtn.textContent = lang === 'ar' ? 'EN' : 'عربي';
 
-    if (loginBtn) {
-      loginBtn.textContent =
-        lang === 'ar' ? 'تسجيل الدخول' : 'Log in';
-    }
-
-    loadStories();
+    await loadStories();
   });
 }
 
-// واجهة تسجيل الدخول
+/* تسجيل الدخول وإنشاء الحساب */
+
 function showLogin() {
   if (!loginDialog) return;
 
   loginDialog.innerHTML = `
     <form class="dialog-card" id="authForm">
       <button type="button" class="close-btn" id="closeAuth">×</button>
-      <p class="eyebrow">قصة عن مصر</p>
+      <p class="eyebrow">QESSAT MASR</p>
       <h2>تسجيل الدخول</h2>
 
-      <label>
-        البريد الإلكتروني
-        <input id="authEmail" type="email"
-          placeholder="name@example.com" required>
+      <label>البريد الإلكتروني
+        <input id="authEmail" type="email" required>
       </label>
 
-      <label>
-        كلمة المرور
-        <input id="authPassword" type="password"
-          placeholder="كلمة المرور" required minlength="6">
+      <label>كلمة المرور
+        <input id="authPassword" type="password" minlength="6" required>
       </label>
 
-      <button class="gold-btn" type="submit" id="authSubmit">
-        تسجيل الدخول
-      </button>
-
-      <button type="button" class="outline-btn"
-        id="registerBtn">
+      <button class="gold-btn" type="submit">تسجيل الدخول</button>
+      <button class="outline-btn" type="button" id="registerBtn">
         إنشاء حساب جديد
       </button>
 
-      <p id="authMessage" class="muted"></p>
+      <p id="authMessage"></p>
     </form>
   `;
 
   loginDialog.showModal();
 
-  document.getElementById('closeAuth').onclick = () => {
-    loginDialog.close();
-  };
+  $('closeAuth').onclick = () => loginDialog.close();
 
-  document.getElementById('registerBtn').onclick = async () => {
-    const email = document.getElementById('authEmail').value.trim();
-    const password = document.getElementById('authPassword').value;
-    const message = document.getElementById('authMessage');
+  $('registerBtn').onclick = async () => {
+    const email = $('authEmail').value.trim();
+    const password = $('authPassword').value;
+    const msg = $('authMessage');
 
     if (!email || password.length < 6) {
-      message.textContent =
-        'اكتب البريد الإلكتروني وكلمة مرور من 6 أحرف على الأقل';
+      msg.textContent = 'اكتب بريدًا صحيحًا وكلمة مرور من 6 أحرف على الأقل';
       return;
     }
 
-    message.textContent = 'جارٍ إنشاء الحساب...';
+    msg.textContent = 'جارٍ إنشاء الحساب...';
 
-    const { error } = await qessatClient.auth.signUp({
+    const { error } = await db.auth.signUp({
       email,
       password
     });
 
-    message.textContent = error
-      ? error.message
-      : 'تم إنشاء الحساب. راجع بريدك الإلكتروني إذا طُلب تأكيده.';
+    msg.textContent = error
+      ? 'خطأ: ' + error.message
+      : 'تم إنشاء الحساب. إذا طُلب تأكيد البريد، راجع بريدك الإلكتروني.';
   };
 
-  document.getElementById('authForm').onsubmit =
-    async (event) => {
-      event.preventDefault();
+  $('authForm').onsubmit = async event => {
+    event.preventDefault();
 
-      const email =
-        document.getElementById('authEmail').value.trim();
+    const email = $('authEmail').value.trim();
+    const password = $('authPassword').value;
+    const msg = $('authMessage');
 
-      const password =
-        document.getElementById('authPassword').value;
+    msg.textContent = 'جارٍ تسجيل الدخول...';
 
-      const message =
-        document.getElementById('authMessage');
+    const { data, error } = await db.auth.signInWithPassword({
+      email,
+      password
+    });
 
-      message.textContent = 'جارٍ تسجيل الدخول...';
+    if (error) {
+      msg.textContent = 'تعذر الدخول: ' + error.message;
+      return;
+    }
 
-      const { data, error } =
-        await qessatClient.auth.signInWithPassword({
-          email,
-          password
-        });
+    currentUser = data.user;
+    await checkAdmin();
 
-      if (error) {
-        message.textContent = 'تعذر تسجيل الدخول: ' + error.message;
-        return;
-      }
+    loginDialog.close();
+    updateLoginButton();
 
-      currentUser = data.user;
-      await checkAdmin();
-
-      loginDialog.close();
-      updateLoginButton();
-
-      if (isAdmin) {
-        showAdminPanel();
-      } else {
-        alert('تم تسجيل الدخول بنجاح');
-      }
-    };
+    if (isAdmin) {
+      showAdminPanel();
+    } else {
+      alert('تم تسجيل الدخول بنجاح');
+    }
+  };
 }
 
-// زر تسجيل الدخول
+/* زر الحساب */
+
 if (loginBtn) {
   loginBtn.addEventListener('click', () => {
-    if (currentUser) {
-      if (isAdmin) {
-        showAdminPanel();
-      } else {
-        showUserMenu();
-      }
-    } else {
+    if (!currentUser) {
       showLogin();
+    } else if (isAdmin) {
+      showAdminPanel();
+    } else {
+      showUserMenu();
     }
   });
 }
 
-// فحص صلاحية المدير
+/* فحص المدير */
+
 async function checkAdmin() {
-  const { data: { user } } =
-    await qessatClient.auth.getUser();
+  const { data: { user }, error: userError } = await db.auth.getUser();
 
-  currentUser = user;
-
-  if (!user) {
+  if (userError || !user) {
+    currentUser = null;
     isAdmin = false;
     return;
   }
 
-  const { data, error } = await qessatClient
+  currentUser = user;
+
+  const { data, error } = await db
     .from('admin_users')
     .select('user_id')
     .eq('user_id', user.id)
@@ -243,7 +215,8 @@ async function checkAdmin() {
   isAdmin = !error && !!data;
 }
 
-// تحديث زر الدخول
+/* تحديث زر الحساب */
+
 function updateLoginButton() {
   if (!loginBtn) return;
 
@@ -252,7 +225,8 @@ function updateLoginButton() {
     : (lang === 'ar' ? 'تسجيل الدخول' : 'Log in');
 }
 
-// قائمة المستخدم
+/* حساب المستخدم */
+
 function showUserMenu() {
   if (!loginDialog) return;
 
@@ -260,24 +234,22 @@ function showUserMenu() {
     <div class="dialog-card">
       <button class="close-btn" id="closeUser">×</button>
       <h2>حسابك</h2>
-      <p></p>
+      <p id="userEmail"></p>
       <button class="gold-btn" id="logoutBtn">تسجيل الخروج</button>
     </div>
   `;
 
-  loginDialog.querySelector('p').textContent = currentUser.email;
+  $('userEmail').textContent = currentUser.email;
   loginDialog.showModal();
 
-  document.getElementById('closeUser').onclick =
-    () => loginDialog.close();
-
-  document.getElementById('logoutBtn').onclick =
-    logoutUser;
+  $('closeUser').onclick = () => loginDialog.close();
+  $('logoutBtn').onclick = logoutUser;
 }
 
-// تسجيل الخروج
+/* تسجيل الخروج */
+
 async function logoutUser() {
-  const { error } = await qessatClient.auth.signOut();
+  const { error } = await db.auth.signOut();
 
   if (error) {
     alert(error.message);
@@ -286,20 +258,23 @@ async function logoutUser() {
 
   currentUser = null;
   isAdmin = false;
+
   updateLoginButton();
-  loginDialog.close();
-  document.getElementById('adminPanel')?.remove();
+  loginDialog?.close();
+  $('adminPanel')?.remove();
+
   alert('تم تسجيل الخروج');
 }
 
-// لوحة المدير
+/* لوحة الإدارة */
+
 function showAdminPanel() {
-  if (!isAdmin) {
+  if (!isAdmin || !app) {
     alert('هذه الصفحة للمدير فقط');
     return;
   }
 
-  let panel = document.getElementById('adminPanel');
+  let panel = $('adminPanel');
 
   if (!panel) {
     panel = document.createElement('section');
@@ -339,7 +314,7 @@ function showAdminPanel() {
         <input id="storyCategory" value="تاريخ مصر">
       </label>
 
-      <label>رابط صورة الغلاف (اختياري)
+      <label>رابط صورة الغلاف
         <input id="storyImage" type="url">
       </label>
 
@@ -348,30 +323,28 @@ function showAdminPanel() {
         نشر القصة مباشرة
       </label>
 
-      <button class="gold-btn" type="submit">
-        حفظ القصة
-      </button>
-
+      <button class="gold-btn" type="submit">حفظ القصة</button>
       <p id="storyMessage"></p>
     </form>
 
-    <h3>القصص الموجودة</h3>
+    <h3>إدارة القصص</h3>
     <div id="adminStories">جارٍ تحميل القصص...</div>
 
-    <button class="outline-btn" id="adminLogout">
-      تسجيل الخروج
-    </button>
+    <button class="outline-btn" id="refreshStories">تحديث القصص</button>
+    <button class="outline-btn" id="adminLogout">تسجيل الخروج</button>
   `;
 
-  panel.scrollIntoView({ behavior: 'smooth' });
+  $('storyForm').onsubmit = saveStory;
+  $('adminLogout').onclick = logoutUser;
+  $('refreshStories').onclick = loadAdminStories;
 
-  document.getElementById('storyForm').onsubmit = saveStory;
-  document.getElementById('adminLogout').onclick = logoutUser;
+  panel.scrollIntoView({ behavior: 'smooth' });
 
   loadAdminStories();
 }
 
-// إضافة قصة
+/* إضافة قصة */
+
 async function saveStory(event) {
   event.preventDefault();
 
@@ -380,46 +353,45 @@ async function saveStory(event) {
     return;
   }
 
-  const message = document.getElementById('storyMessage');
-  message.textContent = 'جارٍ حفظ القصة...';
+  const msg = $('storyMessage');
+  msg.textContent = 'جارٍ حفظ القصة...';
 
   const story = {
-    title_ar: document.getElementById('storyTitleAr').value.trim(),
-    title_en: document.getElementById('storyTitleEn').value.trim(),
-    content_ar: document.getElementById('storyContentAr').value.trim(),
-    content_en: document.getElementById('storyContentEn').value.trim(),
-    category: document.getElementById('storyCategory').value.trim(),
-    cover_image: document.getElementById('storyImage').value.trim() || null,
-    published: document.getElementById('storyPublished').checked
+    title_ar: $('storyTitleAr').value.trim(),
+    title_en: $('storyTitleEn').value.trim(),
+    content_ar: $('storyContentAr').value.trim(),
+    content_en: $('storyContentEn').value.trim(),
+    category: $('storyCategory').value.trim() || 'تاريخ مصر',
+    cover_image: $('storyImage').value.trim() || null,
+    published: $('storyPublished').checked
   };
 
-  const { error } = await qessatClient
-    .from('stories')
-    .insert([story]);
+  const { error } = await db.from('stories').insert([story]);
 
   if (error) {
-    message.textContent = 'حدث خطأ: ' + error.message;
+    msg.textContent = 'فشل الحفظ: ' + error.message;
     return;
   }
 
-  message.textContent = 'تم حفظ القصة بنجاح';
-  document.getElementById('storyForm').reset();
-  document.getElementById('storyCategory').value = 'تاريخ مصر';
+  msg.textContent = 'تم حفظ القصة بنجاح';
+  $('storyForm').reset();
+  $('storyCategory').value = 'تاريخ مصر';
 
   await loadAdminStories();
   await loadStories();
 }
 
-// تحميل القصص المنشورة
+/* عرض القصص المنشورة */
+
 async function loadStories() {
-  const { data, error } = await qessatClient
+  const { data, error } = await db
     .from('stories')
     .select('*')
     .eq('published', true)
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Stories error:', error.message);
+    console.error('خطأ تحميل القصص:', error.message);
     return;
   }
 
@@ -459,20 +431,23 @@ async function loadStories() {
   });
 }
 
-// تحميل قصص لوحة المدير مع أزرار النشر والحذف
+/* عرض قصص الإدارة وأزرار النشر والحذف */
+
 async function loadAdminStories() {
   if (!isAdmin) return;
 
-  const container = document.getElementById('adminStories');
+  const container = $('adminStories');
   if (!container) return;
 
-  const { data, error } = await qessatClient
+  container.textContent = 'جارٍ تحميل القصص...';
+
+  const { data, error } = await db
     .from('stories')
     .select('*')
     .order('created_at', { ascending: false });
 
   if (error) {
-    container.textContent = 'تعذر تحميل القصص: ' + error.message;
+    container.textContent = 'خطأ تحميل القصص: ' + error.message;
     return;
   }
 
@@ -484,16 +459,17 @@ async function loadAdminStories() {
   }
 
   data.forEach(story => {
-    const item = document.createElement('div');
+    const item = document.createElement('article');
     item.className = 'era-card';
 
     const title = document.createElement('h3');
     title.textContent = story.title_ar;
 
     const status = document.createElement('p');
-    status.textContent = story.published ? 'منشورة' : 'مسودة';
+    status.textContent = story.published ? 'الحالة: منشورة' : 'الحالة: مسودة';
 
     const publishButton = document.createElement('button');
+    publishButton.type = 'button';
     publishButton.className = 'gold-btn';
     publishButton.textContent = story.published
       ? 'إرجاع إلى المسودات'
@@ -503,13 +479,15 @@ async function loadAdminStories() {
       publishButton.disabled = true;
       publishButton.textContent = 'جارٍ التحديث...';
 
-      const { error: updateError } = await qessatClient
+      const { data: updated, error: updateError } = await db
         .from('stories')
         .update({ published: !story.published })
-        .eq('id', story.id);
+        .eq('id', story.id)
+        .select('id, published');
 
-      if (updateError) {
-        alert('حدث خطأ: ' + updateError.message);
+      if (updateError || !updated || updated.length === 0) {
+        alert('تعذر تغيير حالة القصة: ' +
+          (updateError?.message || 'لم يتم تحديث أي سجل. راجع صلاحيات قاعدة البيانات.'));
         publishButton.disabled = false;
         publishButton.textContent = story.published
           ? 'إرجاع إلى المسودات'
@@ -522,23 +500,25 @@ async function loadAdminStories() {
     };
 
     const deleteButton = document.createElement('button');
+    deleteButton.type = 'button';
     deleteButton.className = 'outline-btn';
     deleteButton.textContent = 'حذف القصة';
 
     deleteButton.onclick = async () => {
-      if (!confirm('هل تريد حذف هذه القصة؟')) return;
+      if (!confirm('هل تريد حذف هذه القصة نهائيًا؟')) return;
 
-      const { error: deleteError } = await qessatClient
+      const { error: deleteError } = await db
         .from('stories')
         .delete()
         .eq('id', story.id);
 
       if (deleteError) {
-        alert('حدث خطأ: ' + deleteError.message);
-      } else {
-        await loadAdminStories();
-        await loadStories();
+        alert('تعذر الحذف: ' + deleteError.message);
+        return;
       }
+
+      await loadAdminStories();
+      await loadStories();
     };
 
     item.append(title, status, publishButton, deleteButton);
@@ -546,13 +526,14 @@ async function loadAdminStories() {
   });
 }
 
-// استعادة الجلسة عند فتح الموقع
+/* استعادة الجلسة */
+
 async function initializeApp() {
   await checkAdmin();
   updateLoginButton();
-  loadStories();
+  await loadStories();
 }
 
 initializeApp();
 
-console.log('Qessat Masr initialized');
+console.log('Qessat Masr - New Admin System Loaded');
