@@ -1,10 +1,8 @@
-
 /* =========================================
    QESSAT MASR
    Complete Stable App
    Supabase + Auth + Admin + Stories
-   Folders + Full Screen Reader
-   Improved Image Loading
+   Reading Fonts + Font Size Controls
 ========================================= */
 
 const SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
@@ -19,6 +17,16 @@ let allStories = [];
 let currentFolder = null;
 let currentStory = null;
 let explorerOpen = false;
+
+/* إعدادات القراءة */
+let readerFont = localStorage.getItem('readerFont') || 'Cairo';
+let readerFontSize = Number(localStorage.getItem('readerFontSize')) || 20;
+
+const READER_FONTS = [
+  { name: 'Cairo', ar: 'كايرو' },
+  { name: 'Amiri', ar: 'أميري' },
+  { name: 'Tajawal', ar: 'تجوّل' }
+];
 
 const FOLDERS = [
   { id: 'ancient', ar: 'مصر القديمة', en: 'Ancient Egypt', icon: '𓂀' },
@@ -49,6 +57,72 @@ function text(ar, en) {
 }
 
 /* =========================================
+   أدوات إعدادات القراءة
+========================================= */
+
+function changeReaderFont(font) {
+  if (!READER_FONTS.some(item => item.name === font)) return;
+
+  readerFont = font;
+  localStorage.setItem('readerFont', font);
+  applyReaderSettings();
+}
+
+function changeReaderFontSize(amount) {
+  readerFontSize = Math.max(16, Math.min(32, readerFontSize + amount));
+
+  localStorage.setItem('readerFontSize', readerFontSize);
+  applyReaderSettings();
+}
+
+function applyReaderSettings() {
+  const content = $('readerText');
+
+  if (content) {
+    content.style.fontFamily = `'${readerFont}', sans-serif`;
+    content.style.fontSize = `${readerFontSize}px`;
+  }
+
+  const sizeLabel = $('readerSizeLabel');
+
+  if (sizeLabel) {
+    sizeLabel.textContent = `${readerFontSize}px`;
+  }
+
+  const fontSelect = $('readerFontSelect');
+
+  if (fontSelect) {
+    fontSelect.value = readerFont;
+  }
+}
+
+function createReaderControls() {
+  const controls = document.createElement('div');
+
+  controls.className = 'reader-controls';
+
+  controls.innerHTML = `
+    <div class="reader-font-control">
+      <label for="readerFontSelect">
+        ${text('نوع الخط', 'Font')}
+      </label>
+
+      <select id="readerFontSelect">
+        <option value="Cairo">كايرو</option>
+        <option value="Amiri">أميري</option>
+        <option value="Tajawal">تجوّل</option>
+      </select>
+    </div>
+
+    <div class="reader-size-control">
+      <button type="button" id="readerDecrease">−</button>
+      <span id="readerSizeLabel"></span>
+      <button type="button" id="readerIncrease">+</button>
+    </div>
+  `;
+
+  return controls;
+}/* =========================================
    السنة
 ========================================= */
 
@@ -68,20 +142,14 @@ if (musicBtn && audio) {
     try {
       if (audio.paused) {
         await audio.play();
-        musicBtn.textContent = text(
-          'Ⅱ إيقاف الموسيقى',
-          'Ⅱ Pause Music'
-        );
+        musicBtn.textContent = text('Ⅱ إيقاف الموسيقى', 'Ⅱ Pause Music');
       } else {
         audio.pause();
-        musicBtn.textContent = text(
-          '▶ تشغيل الموسيقى',
-          '▶ Play Music'
-        );
+        musicBtn.textContent = text('▶ تشغيل الموسيقى', '▶ Play Music');
       }
     } catch (error) {
       console.error('Audio error:', error);
-      showError('تعذر تشغيل الموسيقى. تأكد من وجود ملف assets/intro-music.m4a');
+      showError('تعذر تشغيل الموسيقى. تأكد من وجود ملف الموسيقى في مجلد assets');
     }
   });
 }
@@ -104,10 +172,7 @@ if (enterBtn) {
     if (audio && audio.paused) {
       audio.play().then(() => {
         if (musicBtn) {
-          musicBtn.textContent = text(
-            'Ⅱ إيقاف الموسيقى',
-            'Ⅱ Pause Music'
-          );
+          musicBtn.textContent = text('Ⅱ إيقاف الموسيقى', 'Ⅱ Pause Music');
         }
       }).catch(error => {
         console.warn('Automatic audio playback blocked:', error);
@@ -210,15 +275,9 @@ function showLogin() {
       return;
     }
 
-    message.textContent = text(
-      'جارٍ إنشاء الحساب...',
-      'Creating account...'
-    );
+    message.textContent = text('جارٍ إنشاء الحساب...', 'Creating account...');
 
-    const { error } = await db.auth.signUp({
-      email,
-      password
-    });
+    const { error } = await db.auth.signUp({ email, password });
 
     message.textContent = error
       ? text('خطأ: ', 'Error: ') + error.message
@@ -235,10 +294,7 @@ function showLogin() {
     const password = $('authPassword').value;
     const message = $('authMessage');
 
-    message.textContent = text(
-      'جارٍ تسجيل الدخول...',
-      'Signing in...'
-    );
+    message.textContent = text('جارٍ تسجيل الدخول...', 'Signing in...');
 
     const { data, error } = await db.auth.signInWithPassword({
       email,
@@ -246,10 +302,7 @@ function showLogin() {
     });
 
     if (error) {
-      message.textContent = text(
-        'تعذر الدخول: ',
-        'Login failed: '
-      ) + error.message;
+      message.textContent = text('تعذر الدخول: ', 'Login failed: ') + error.message;
       return;
     }
 
@@ -289,8 +342,7 @@ if (loginBtn) {
 ========================================= */
 
 async function checkAdmin() {
-  const { data: authData, error: authError } =
-    await db.auth.getUser();
+  const { data: authData, error: authError } = await db.auth.getUser();
 
   if (authError || !authData.user) {
     currentUser = null;
@@ -372,9 +424,7 @@ async function logoutUser() {
   $('adminPanel')?.remove();
 
   alert(text('تم تسجيل الخروج', 'Logged out successfully'));
-}
-
-/* =========================================
+}/* =========================================
    لوحة الإدارة
 ========================================= */
 
@@ -400,7 +450,6 @@ function showAdminPanel() {
     </div>
 
     <form id="storyForm" class="dialog-card">
-
       <h3>${text('إضافة حكاية جديدة', 'Add New Story')}</h3>
 
       <label>
@@ -427,9 +476,7 @@ function showAdminPanel() {
         ${text('اختر مجلد القصة', 'Choose Story Folder')}
         <select id="storyCategory" required>
           ${FOLDERS.map(folder => `
-            <option value="${folder.ar}">
-              ${folderTitle(folder)}
-            </option>
+            <option value="${folder.ar}">${folderTitle(folder)}</option>
           `).join('')}
         </select>
       </label>
@@ -489,10 +536,7 @@ async function saveStory(event) {
 
   const message = $('storyMessage');
 
-  message.textContent = text(
-    'جارٍ حفظ القصة...',
-    'Saving story...'
-  );
+  message.textContent = text('جارٍ حفظ القصة...', 'Saving story...');
 
   const story = {
     title_ar: $('storyTitleAr').value.trim(),
@@ -504,22 +548,14 @@ async function saveStory(event) {
     published: $('storyPublished').checked
   };
 
-  const { error } = await db
-    .from('stories')
-    .insert([story]);
+  const { error } = await db.from('stories').insert([story]);
 
   if (error) {
-    message.textContent = text(
-      'فشل الحفظ: ',
-      'Save failed: '
-    ) + error.message;
+    message.textContent = text('فشل الحفظ: ', 'Save failed: ') + error.message;
     return;
   }
 
-  message.textContent = text(
-    'تم حفظ القصة بنجاح',
-    'Story saved successfully'
-  );
+  message.textContent = text('تم حفظ القصة بنجاح', 'Story saved successfully');
 
   $('storyForm').reset();
 
@@ -646,9 +682,7 @@ function getFolderStories(folder) {
            category === folder.en ||
            category === folder.id;
   });
-}
-
-/* =========================================
+}/* =========================================
    إنشاء شاشة القصص
 ========================================= */
 
@@ -776,12 +810,67 @@ function createExplorer() {
 
     #storyExplorer .reader-category {
       color: #bda16c;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
+    }
+
+    #storyExplorer .reader-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px;
+      margin-bottom: 20px;
+      background: #262016;
+      border: 1px solid rgba(212,175,100,.3);
+      border-radius: 14px;
+    }
+
+    #storyExplorer .reader-font-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #storyExplorer .reader-font-control label {
+      color: #e6c681;
+    }
+
+    #storyExplorer .reader-font-control select {
+      background: #17130d;
+      color: #f5ead1;
+      border: 1px solid #b99755;
+      border-radius: 9px;
+      padding: 9px;
+      font: inherit;
+    }
+
+    #storyExplorer .reader-size-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #storyExplorer .reader-size-control button {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid #b99755;
+      background: #17130d;
+      color: #e6c681;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    #storyExplorer #readerSizeLabel {
+      color: #f5ead1;
+      min-width: 45px;
+      text-align: center;
     }
 
     #storyExplorer .reader-text {
       color: #f0e6d4;
-      font-size: 19px;
+      font-size: 20px;
       line-height: 2.1;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
@@ -800,20 +889,21 @@ function createExplorer() {
     }
 
     @media(max-width:600px) {
-      #storyExplorer .explorer-content {
-        padding: 15px;
-      }
-
+      #storyExplorer .explorer-content,
       #storyExplorer .explorer-reader {
         padding: 15px;
       }
 
-      #storyExplorer .reader-text {
-        font-size: 17px;
-      }
-
       #storyExplorer .reader-cover {
         max-height: 300px;
+      }
+
+      #storyExplorer .reader-controls {
+        align-items: stretch;
+      }
+
+      #storyExplorer .reader-font-control {
+        justify-content: space-between;
       }
     }
   `;
@@ -883,9 +973,7 @@ function renderExplorer() {
         ${text('← رجوع', '← Back')}
       </button>
 
-      <h2 class="explorer-title">
-        ${folderTitle(currentFolder)}
-      </h2>
+      <h2 class="explorer-title">${folderTitle(currentFolder)}</h2>
     </div>
 
     <div class="explorer-content">
@@ -901,12 +989,10 @@ function renderExplorer() {
     list.innerHTML = `
       <div class="explorer-empty">
         <div style="font-size:45px">📜</div>
-        <h3>
-          ${text(
-            'لا توجد قصص في هذا المجلد حتى الآن',
-            'No stories in this folder yet'
-          )}
-        </h3>
+        <h3>${text(
+          'لا توجد قصص في هذا المجلد حتى الآن',
+          'No stories in this folder yet'
+        )}</h3>
       </div>
     `;
     return;
@@ -970,7 +1056,7 @@ function openStory(story) {
 }
 
 /* =========================================
-   قارئ القصة كامل الشاشة
+   قارئ القصة
 ========================================= */
 
 function renderReader() {
@@ -1018,11 +1104,28 @@ function renderReader() {
   category.className = 'reader-category';
   category.textContent = folderTitle(currentFolder);
 
+  const controls = createReaderControls();
+
   const content = document.createElement('div');
   content.className = 'reader-text';
+  content.id = 'readerText';
   content.textContent = storyContent(story);
 
-  reader.append(title, category, content);
+  reader.append(title, category, controls, content);
+
+  $('readerFontSelect').onchange = event => {
+    changeReaderFont(event.target.value);
+  };
+
+  $('readerIncrease').onclick = () => {
+    changeReaderFontSize(2);
+  };
+
+  $('readerDecrease').onclick = () => {
+    changeReaderFontSize(-2);
+  };
+
+  applyReaderSettings();
 
   explorer.scrollTop = 0;
 }
@@ -1111,8 +1214,7 @@ async function loadAdminStories() {
 
   if (error) {
     container.textContent =
-      text('خطأ تحميل القصص: ', 'Loading error: ') +
-      error.message;
+      text('خطأ تحميل القصص: ', 'Loading error: ') + error.message;
     return;
   }
 
@@ -1139,8 +1241,7 @@ async function loadAdminStories() {
       : text('الحالة: مسودة', 'Status: Draft');
 
     const category = document.createElement('p');
-    category.textContent =
-      text('المجلد: ', 'Folder: ') + story.category;
+    category.textContent = text('المجلد: ', 'Folder: ') + story.category;
 
     const publishButton = document.createElement('button');
     publishButton.type = 'button';
