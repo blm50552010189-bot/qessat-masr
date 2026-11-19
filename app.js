@@ -557,6 +557,40 @@ function storyContent(story) {
     : (story.content_en || story.content_ar || '');
 }
 
+/* =========================================
+   تحويل روابط صور Google Drive
+========================================= */
+
+function normalizeImageUrl(url) {
+  if (!url || typeof url !== 'string') return '';
+
+  const value = url.trim();
+
+  try {
+    const parsed = new URL(value);
+    const host = parsed.hostname.toLowerCase();
+
+    if (
+      host === 'drive.google.com' ||
+      host === 'www.drive.google.com' ||
+      host === 'drive.usercontent.google.com'
+    ) {
+      const pathMatch = parsed.pathname.match(/\/file\/d\/([^/]+)/i);
+      const fileId = pathMatch
+        ? pathMatch[1]
+        : parsed.searchParams.get('id');
+
+      if (fileId) {
+        return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
+      }
+    }
+  } catch (error) {
+    console.warn('Image URL could not be parsed:', error);
+  }
+
+  return value;
+}
+
 function folderTitle(folder) {
   return lang === 'ar' ? folder.ar : folder.en;
 }
@@ -841,7 +875,7 @@ function renderExplorer() {
 
     if (story.cover_image) {
       const image = document.createElement('img');
-      image.src = story.cover_image;
+      image.src = normalizeImageUrl(story.cover_image);
       image.alt = storyTitle(story);
       image.loading = 'lazy';
       image.onerror = () => image.remove();
@@ -924,7 +958,7 @@ function renderReader() {
   if (story.cover_image) {
     const image = document.createElement('img');
     image.className = 'reader-cover';
-    image.src = story.cover_image;
+    image.src = normalizeImageUrl(story.cover_image);
     image.alt = storyTitle(story);
     image.onerror = () => image.remove();
 
