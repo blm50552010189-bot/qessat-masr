@@ -1,9 +1,10 @@
 
 /* =========================================
    QESSAT MASR
-   Complete App - Stable Version
+   Complete Stable App
    Supabase + Auth + Admin + Stories
-   Folders + Full Screen Story Reader
+   Folders + Full Screen Reader
+   Improved Image Loading
 ========================================= */
 
 const SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
@@ -67,13 +68,20 @@ if (musicBtn && audio) {
     try {
       if (audio.paused) {
         await audio.play();
-        musicBtn.textContent = text('Ⅱ إيقاف الموسيقى', 'Ⅱ Pause Music');
+        musicBtn.textContent = text(
+          'Ⅱ إيقاف الموسيقى',
+          'Ⅱ Pause Music'
+        );
       } else {
         audio.pause();
-        musicBtn.textContent = text('▶ تشغيل الموسيقى', '▶ Play Music');
+        musicBtn.textContent = text(
+          '▶ تشغيل الموسيقى',
+          '▶ Play Music'
+        );
       }
     } catch (error) {
-      showError('تعذر تشغيل الموسيقى');
+      console.error('Audio error:', error);
+      showError('تعذر تشغيل الموسيقى. تأكد من وجود ملف assets/intro-music.m4a');
     }
   });
 }
@@ -101,7 +109,9 @@ if (enterBtn) {
             'Ⅱ Pause Music'
           );
         }
-      }).catch(() => {});
+      }).catch(error => {
+        console.warn('Automatic audio playback blocked:', error);
+      });
     }
 
     await loadStories();
@@ -120,10 +130,7 @@ function updateLanguage() {
 
   document.querySelectorAll('[data-ar]').forEach(element => {
     const value = element.dataset[lang];
-
-    if (value) {
-      element.textContent = value;
-    }
+    if (value) element.textContent = value;
   });
 
   if (langBtn) {
@@ -558,11 +565,11 @@ function storyContent(story) {
 }
 
 /* =========================================
-   تحويل روابط صور Google Drive
+   معالجة روابط الصور
 ========================================= */
 
-function normalizeImageUrl(url) {
-  if (!url || typeof url !== 'string') return '';
+function getImageCandidates(url) {
+  if (!url || typeof url !== 'string') return [];
 
   const value = url.trim();
 
@@ -576,20 +583,56 @@ function normalizeImageUrl(url) {
       host === 'drive.usercontent.google.com'
     ) {
       const pathMatch = parsed.pathname.match(/\/file\/d\/([^/]+)/i);
+
       const fileId = pathMatch
         ? pathMatch[1]
         : parsed.searchParams.get('id');
 
       if (fileId) {
-        return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;
+        const id = encodeURIComponent(fileId);
+
+        return [
+          `https://drive.google.com/thumbnail?id=${id}&sz=w1200`,
+          `https://lh3.googleusercontent.com/d/${id}`,
+          `https://drive.google.com/uc?export=view&id=${id}`,
+          `https://drive.google.com/uc?export=download&id=${id}`
+        ];
       }
     }
   } catch (error) {
     console.warn('Image URL could not be parsed:', error);
   }
 
-  return value;
+  return [value];
 }
+
+function setImageWithFallback(image, url) {
+  const candidates = getImageCandidates(url);
+
+  if (!candidates.length) {
+    image.remove();
+    return;
+  }
+
+  let currentIndex = 0;
+
+  image.onerror = () => {
+    currentIndex++;
+
+    if (currentIndex < candidates.length) {
+      image.src = candidates[currentIndex];
+    } else {
+      console.warn('All image URLs failed:', url);
+      image.remove();
+    }
+  };
+
+  image.src = candidates[currentIndex];
+}
+
+/* =========================================
+   المجلدات
+========================================= */
 
 function folderTitle(folder) {
   return lang === 'ar' ? folder.ar : folder.en;
@@ -690,6 +733,7 @@ function createExplorer() {
       width: 100%;
       height: 175px;
       object-fit: cover;
+      background: #302719;
     }
 
     #storyExplorer .explorer-story-info {
@@ -720,6 +764,7 @@ function createExplorer() {
       object-fit: cover;
       border-radius: 16px;
       margin: 0 auto 25px;
+      background: #302719;
     }
 
     #storyExplorer .reader-title {
@@ -875,10 +920,10 @@ function renderExplorer() {
 
     if (story.cover_image) {
       const image = document.createElement('img');
-      image.src = normalizeImageUrl(story.cover_image);
       image.alt = storyTitle(story);
       image.loading = 'lazy';
-      image.onerror = () => image.remove();
+
+      setImageWithFallback(image, story.cover_image);
 
       card.appendChild(image);
     }
@@ -958,9 +1003,9 @@ function renderReader() {
   if (story.cover_image) {
     const image = document.createElement('img');
     image.className = 'reader-cover';
-    image.src = normalizeImageUrl(story.cover_image);
     image.alt = storyTitle(story);
-    image.onerror = () => image.remove();
+
+    setImageWithFallback(image, story.cover_image);
 
     reader.appendChild(image);
   }
@@ -1202,7 +1247,7 @@ async function initializeApp() {
 }
 
 /* =========================================
-   اختصار زر الرجوع في الهاتف
+   زر الرجوع في الهاتف
 ========================================= */
 
 document.addEventListener('keydown', event => {
