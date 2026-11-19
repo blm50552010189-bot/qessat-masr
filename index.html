@@ -39,8 +39,6 @@
       display: none !important;
     }
 
-    /* SPLASH */
-
     .splash {
       position: fixed;
       inset: 0;
@@ -109,8 +107,6 @@
       border-radius: 10px;
     }
 
-    /* MAIN APP */
-
     .app-shell {
       min-height: 100vh;
     }
@@ -149,8 +145,6 @@
       padding: 9px 13px;
     }
 
-    /* HERO */
-
     .hero {
       min-height: 430px;
       display: flex;
@@ -186,8 +180,6 @@
       line-height: 2;
     }
 
-    /* SECTIONS */
-
     .section {
       width: min(1150px,92%);
       margin: auto;
@@ -209,8 +201,6 @@
       color: #c8b994;
       line-height: 1.8;
     }
-
-    /* ERA FOLDERS */
 
     .era-grid {
       display: grid;
@@ -257,13 +247,9 @@
       line-height: 1.7;
     }
 
-    /* LATEST */
-
     .latest {
       display: none;
     }
-
-    /* FOOTER */
 
     .footer {
       text-align: center;
@@ -272,8 +258,6 @@
       border-top: 1px solid rgba(214,180,108,.2);
       line-height: 2;
     }
-
-    /* LOGIN DIALOG */
 
     dialog {
       width: min(440px,92%);
@@ -334,8 +318,6 @@
       color: #e6c681;
       font-size: 25px;
     }
-
-    /* ADMIN */
 
     #adminPanel {
       border-top: 1px solid rgba(214,180,108,.25);
@@ -407,8 +389,6 @@
 
 <body>
 
-  <!-- INTRO SCREEN -->
-
   <section class="splash" id="splash">
     <div class="splash-content">
       <div class="splash-symbol">𓂀</div>
@@ -430,24 +410,19 @@
           ادخل إلى الحكاية ▶
         </button>
 
-        <button class="outline-btn" id="musicBtn">
+        <button class="outline-btn" id="musicBtn" type="button">
           تشغيل الموسيقى
         </button>
       </div>
     </div>
   </section>
 
-  <!-- AUDIO -->
-
+  <!-- ملف الموسيقى الصحيح -->
   <audio id="introAudio" loop preload="none">
-    <source src="assets/intro.mp3" type="audio/mpeg">
+    <source src="assets/intro-music.m4a" type="audio/mp4">
   </audio>
 
-  <!-- MAIN APPLICATION -->
-
   <main id="app" class="app-shell hidden">
-
-    <!-- NAVIGATION -->
 
     <header class="topbar">
       <a href="#top" class="brand">قصة عن مصر 𓂀</a>
@@ -457,8 +432,6 @@
         <button id="loginBtn" type="button">تسجيل الدخول</button>
       </div>
     </header>
-
-    <!-- HERO -->
 
     <section class="hero" id="top">
       <div class="hero-content">
@@ -478,8 +451,6 @@
         </a>
       </div>
     </section>
-
-    <!-- ERAS -->
 
     <section class="section" id="eras">
 
@@ -534,8 +505,6 @@
       </div>
     </section>
 
-    <!-- STORIES SECTION -->
-
     <section class="section latest">
       <div class="section-heading">
         <h2>أحدث القصص</h2>
@@ -546,8 +515,6 @@
       </div>
     </section>
 
-    <!-- FOOTER -->
-
     <footer class="footer">
       <p>قصة عن مصر 𓂀</p>
       <p>رحلة عبر التاريخ والحضارة المصرية</p>
@@ -557,17 +524,12 @@
 
   </main>
 
-  <!-- LOGIN DIALOG -->
-
   <dialog id="loginDialog"></dialog>
-
-  <!-- SUPABASE LIBRARY -->
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- APPLICATION JAVASCRIPT -->
-
-  <script src="app.js?v=7"></script>
+  <!-- تحديث رقم النسخة -->
+  <script src="app.js?v=8"></script>
 
 </body>
 </html>
