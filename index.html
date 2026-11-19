@@ -530,7 +530,15 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- تحديث رقم النسخة -->
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=8"></script><script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('App ready'))
+      .catch(error => console.error('SW error:', error));
+  });
+}
+</script>
 
 </body>
 </html>
