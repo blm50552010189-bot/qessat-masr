@@ -1,0 +1,27 @@
+{
+  "name": "قصة عن مصر",
+  "short_name": "قصة مصر",
+  "description": "رحلة عبر تاريخ مصر وحضارتها وقصصها",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/qessat-masr/",
+  "scope": "/qessat-masr/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#12100c",
+  "theme_color": "#17130d",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
