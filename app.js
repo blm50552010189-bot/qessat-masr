@@ -1,8 +1,9 @@
+
 /* =========================================
    QESSAT MASR
-   Complete Stable App
+   Complete App + Offline Stories Cache
    Supabase + Auth + Admin + Stories
-   Reading Fonts + Font Size Controls
+   Reading Fonts + Automatic Sync
 ========================================= */
 
 const SUPABASE_URL = 'https://bhudyegwlztfslhkbdjf.supabase.co';
@@ -21,6 +22,10 @@ let explorerOpen = false;
 /* إعدادات القراءة */
 let readerFont = localStorage.getItem('readerFont') || 'Cairo';
 let readerFontSize = Number(localStorage.getItem('readerFontSize')) || 20;
+
+/* إعدادات التخزين الأوفلاين */
+const STORIES_CACHE_KEY = 'qessat_masr_stories_v1';
+let storiesSyncing = false;
 
 const READER_FONTS = [
   { name: 'Cairo', ar: 'كايرو' },
@@ -57,6 +62,39 @@ function text(ar, en) {
 }
 
 /* =========================================
+   أدوات التخزين الأوفلاين
+========================================= */
+
+function getCachedStories() {
+  try {
+    const saved = localStorage.getItem(STORIES_CACHE_KEY);
+
+    if (!saved) return null;
+
+    const stories = JSON.parse(saved);
+
+    return Array.isArray(stories) ? stories : null;
+  } catch (error) {
+    console.warn('Offline cache read error:', error);
+    return null;
+  }
+}
+
+function saveCachedStories(stories) {
+  try {
+    localStorage.setItem(
+      STORIES_CACHE_KEY,
+      JSON.stringify(stories)
+    );
+
+    return true;
+  } catch (error) {
+    console.warn('Offline cache save error:', error);
+    return false;
+  }
+}
+
+/* =========================================
    أدوات إعدادات القراءة
 ========================================= */
 
@@ -69,7 +107,10 @@ function changeReaderFont(font) {
 }
 
 function changeReaderFontSize(amount) {
-  readerFontSize = Math.max(16, Math.min(32, readerFontSize + amount));
+  readerFontSize = Math.max(
+    16,
+    Math.min(32, readerFontSize + amount)
+  );
 
   localStorage.setItem('readerFontSize', readerFontSize);
   applyReaderSettings();
@@ -122,7 +163,9 @@ function createReaderControls() {
   `;
 
   return controls;
-}/* =========================================
+}
+
+/* =========================================
    السنة
 ========================================= */
 
@@ -424,7 +467,9 @@ async function logoutUser() {
   $('adminPanel')?.remove();
 
   alert(text('تم تسجيل الخروج', 'Logged out successfully'));
-}/* =========================================
+}
+
+/* =========================================
    لوحة الإدارة
 ========================================= */
 
@@ -564,25 +609,69 @@ async function saveStory(event) {
 }
 
 /* =========================================
-   تحميل القصص المنشورة
+   تحميل القصص المنشورة + الأوفلاين
 ========================================= */
 
 async function loadStories() {
-  const { data, error } = await db
-    .from('stories')
-    .select('*')
-    .eq('published', true)
-    .order('created_at', { ascending: false });
+  // منع تكرار طلبات المزامنة
+  if (storiesSyncing) return;
 
-  if (error) {
-    console.error('Stories loading error:', error.message);
+  // عرض القصص المحفوظة فوراً
+  const cachedStories = getCachedStories();
+
+  if (cachedStories !== null) {
+    allStories = cachedStories;
+    renderStories();
+  }
+
+  // إذا لا يوجد إنترنت نكتفي بالنسخة المحفوظة
+  if (!navigator.onLine) {
+    console.log('Offline mode: cached stories displayed');
     return;
   }
 
-  allStories = data || [];
+  storiesSyncing = true;
 
-  renderStories();
+  try {
+    const { data, error } = await db
+      .from('stories')
+      .select('*')
+      .eq('published', true)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    allStories = data || [];
+
+    // حفظ أحدث نسخة بعد نجاح الاتصال
+    saveCachedStories(allStories);
+
+    renderStories();
+
+    console.log('Stories synchronized successfully');
+
+  } catch (error) {
+    console.error('Stories synchronization failed:', error);
+
+    // الاحتفاظ بالنسخة القديمة عند فشل الاتصال
+    if (cachedStories !== null) {
+      allStories = cachedStories;
+      renderStories();
+    }
+
+  } finally {
+    storiesSyncing = false;
+  }
 }
+
+/* =========================================
+   مزامنة تلقائية عند رجوع الإنترنت
+========================================= */
+
+window.addEventListener('online', () => {
+  console.log('Internet restored. Updating stories...');
+  loadStories();
+});
 
 /* =========================================
    أدوات اللغة والقصص
@@ -682,7 +771,9 @@ function getFolderStories(folder) {
            category === folder.en ||
            category === folder.id;
   });
-}/* =========================================
+}
+
+/* =========================================
    إنشاء شاشة القصص
 ========================================= */
 
@@ -1326,26 +1417,55 @@ async function loadAdminStories() {
 
 async function initializeApp() {
   try {
-    const { data, error } = await db.auth.getUser();
+    // عرض القصص المحفوظة حتى قبل اكتمال الاتصال
+    const cachedStories = getCachedStories();
 
-    if (error) {
-      console.warn('Auth:', error.message);
+    if (cachedStories !== null) {
+      allStories = cachedStories;
+      renderStories();
     }
 
-    if (data?.user) {
-      await checkAdmin();
+    // استعادة جلسة المستخدم عند توفر الإنترنت
+    if (navigator.onLine) {
+      const { data, error } = await db.auth.getUser();
+
+      if (error) {
+        console.warn('Auth:', error.message);
+      }
+
+      if (data?.user) {
+        await checkAdmin();
+      }
     }
 
     updateLanguage();
     updateLoginButton();
     setupFolderNavigation();
 
+    // مزامنة القصص أو عرض النسخة المحفوظة
     await loadStories();
 
   } catch (error) {
     console.error('Initialization error:', error);
+
+    // محاولة الاستمرار بالنسخة المحفوظة
+    const cachedStories = getCachedStories();
+
+    if (cachedStories !== null) {
+      allStories = cachedStories;
+      renderStories();
+    }
   }
 }
+
+/* =========================================
+   مزامنة عند رجوع الإنترنت
+========================================= */
+
+window.addEventListener('online', () => {
+  console.log('Connection restored');
+  loadStories();
+});
 
 /* =========================================
    زر الرجوع في الهاتف
@@ -1363,4 +1483,4 @@ document.addEventListener('keydown', event => {
 
 initializeApp();
 
-console.log('Qessat Masr - App Ready');
+console.log('Qessat Masr - Online and Offline Ready');
