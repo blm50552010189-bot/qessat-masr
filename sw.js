@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'qessat-masr-v2';
+const CACHE_NAME = 'qessat-masr-v3';
 
 const APP_FILES = [
   './',
@@ -11,41 +11,43 @@ const APP_FILES = [
   './assets/icon-512.png'
 ];
 
-/* تثبيت التطبيق وحفظ الملفات الأساسية */
+/* تثبيت وحفظ الملفات الأساسية */
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(async cache => {
-        await Promise.all(
-          APP_FILES.map(async file => {
-            try {
-              await cache.add(file);
-            } catch (error) {
-              console.warn('Could not cache:', file);
-            }
-          })
-        );
-      })
-      .then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+
+      for (const file of APP_FILES) {
+        try {
+          await cache.add(file);
+        } catch (error) {
+          console.warn('Cache failed:', file, error);
+        }
+      }
+
+      await self.skipWaiting();
+    })()
   );
 });
 
-/* تفعيل الإصدار الجديد ومسح الكاش القديم */
+/* تفعيل الإصدار الجديد */
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys()
-      .then(keys =>
-        Promise.all(
-          keys
-            .filter(key => key !== CACHE_NAME)
-            .map(key => caches.delete(key))
-        )
-      )
-      .then(() => self.clients.claim())
+    (async () => {
+      const keys = await caches.keys();
+
+      await Promise.all(
+        keys
+          .filter(key => key.startsWith('qessat-masr-') && key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      );
+
+      await self.clients.claim();
+    })()
   );
 });
 
-/* التعامل مع طلبات الملفات والصفحات */
+/* تحميل الصفحات والملفات */
 self.addEventListener('fetch', event => {
   const request = event.request;
 
@@ -53,92 +55,74 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
 
-  // نترك الطلبات الخارجية مثل Supabase دون تدخل
+  // لا نتدخل في طلبات المواقع الخارجية أو Supabase
   if (url.origin !== self.location.origin) return;
 
-  // الصفحة الرئيسية: الإنترنت أولاً، ثم النسخة المحفوظة
+  // الصفحة الرئيسية
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (response && response.status === 200) {
-            const copy = response.clone();
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
 
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, copy);
-              cache.put('./index.html', response.clone());
-            });
+        try {
+          const response = await fetch(request);
+
+          if (response.ok) {
+            await cache.put('./index.html', response.clone());
           }
 
           return response;
-        })
-        .catch(async () => {
-          const cache = await caches.open(CACHE_NAME);
-
+        } catch (error) {
           return (
-            await cache.match(request) ||
             await cache.match('./index.html') ||
             await cache.match('./')
           );
-        })
+        }
+      })()
     );
 
     return;
   }
 
-  // الملفات والصور: الكاش أولاً مع تحديثه من الإنترنت
+  // الملفات المحلية والصور
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
 
-      const cached =
-        await cache.match(request) ||
-        await cache.match(url.pathname);
-
-      const networkRequest = fetch(request)
-        .then(async response => {
-          if (
-            response &&
-            response.status === 200 &&
-            response.type === 'basic'
-          ) {
-            await cache.put(request, response.clone());
-
-            // حفظ نسخة بدون query string أيضاً
-            if (url.search) {
-              await cache.put(
-                new Request(url.origin + url.pathname),
-                response.clone()
-              );
-            }
-          }
-
-          return response;
-        });
+      const cached = await cache.match(request);
 
       if (cached) {
         event.waitUntil(
-          networkRequest.catch(() => {})
+          fetch(request)
+            .then(response => {
+              if (response.ok && response.type === 'basic') {
+                return cache.put(request, response.clone());
+              }
+            })
+            .catch(() => {})
         );
 
         return cached;
       }
 
       try {
-        return await networkRequest;
+        const response = await fetch(request);
+
+        if (response.ok && response.type === 'basic') {
+          await cache.put(request, response.clone());
+        }
+
+        return response;
       } catch (error) {
-        return new Response(
-          'هذا الملف غير متاح دون اتصال بالإنترنت.',
-          {
-            status: 503,
-            headers: {
-              'Content-Type': 'text/plain; charset=utf-8'
-            }
+        return new Response('الملف غير متاح دون إنترنت', {
+          status: 503,
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8'
           }
-        );
+        });
       }
     })()
   );
 });
 
-console.log('Qessat Masr Offline Cache v2 Ready');
+console.log('Qessat Masr Offline v3 Ready');
