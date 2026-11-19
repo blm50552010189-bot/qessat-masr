@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- إعدادات التطبيق -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#17130d">
   <meta name="description" content="قصة عن مصر: رحلة عبر التاريخ والحضارة والقصص والروايات.">
@@ -19,13 +18,9 @@
   <link rel="stylesheet" href="./style.css">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
@@ -34,17 +29,9 @@
       font-family: Arial, sans-serif;
     }
 
-    button, input, textarea, select {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
 
     .splash {
       position: fixed;
@@ -61,33 +48,11 @@
         center/cover;
     }
 
-    .splash-content {
-      width: 100%;
-      max-width: 650px;
-    }
-
-    .splash-symbol {
-      color: #d6b66d;
-      font-size: 65px;
-      margin-bottom: 10px;
-    }
-
-    .splash h1 {
-      color: #e8ca87;
-      font-size: clamp(35px,8vw,65px);
-      margin: 10px 0;
-    }
-
-    .splash h2 {
-      font-size: 20px;
-      font-weight: normal;
-      color: #eee0c4;
-    }
-
-    .splash p {
-      color: #d8c9a9;
-      line-height: 2;
-    }
+    .splash-content { width: 100%; max-width: 650px; }
+    .splash-symbol { color: #d6b66d; font-size: 65px; margin-bottom: 10px; }
+    .splash h1 { color: #e8ca87; font-size: clamp(35px,8vw,65px); margin: 10px 0; }
+    .splash h2 { font-size: 20px; font-weight: normal; color: #eee0c4; }
+    .splash p { color: #d8c9a9; line-height: 2; }
 
     .splash-buttons {
       display: flex;
@@ -114,9 +79,7 @@
       border-radius: 10px;
     }
 
-    .app-shell {
-      min-height: 100vh;
-    }
+    .app-shell { min-height: 100vh; }
 
     .topbar {
       position: sticky;
@@ -138,11 +101,7 @@
       font-weight: bold;
     }
 
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
 
     .top-actions button {
       background: transparent;
@@ -165,27 +124,10 @@
         center/cover;
     }
 
-    .hero-content {
-      max-width: 800px;
-    }
-
-    .eyebrow {
-      color: #d9b66c;
-      letter-spacing: 2px;
-      font-size: 13px;
-    }
-
-    .hero h1 {
-      color: #ebcb83;
-      font-size: clamp(35px,7vw,60px);
-      margin: 15px 0;
-    }
-
-    .hero p {
-      color: #eee2ca;
-      font-size: 18px;
-      line-height: 2;
-    }
+    .hero-content { max-width: 800px; }
+    .eyebrow { color: #d9b66c; letter-spacing: 2px; font-size: 13px; }
+    .hero h1 { color: #ebcb83; font-size: clamp(35px,7vw,60px); margin: 15px 0; }
+    .hero p { color: #eee2ca; font-size: 18px; line-height: 2; }
 
     .section {
       width: min(1150px,92%);
@@ -193,21 +135,9 @@
       padding: 55px 0;
     }
 
-    .section-heading {
-      text-align: center;
-      margin-bottom: 35px;
-    }
-
-    .section-heading h2 {
-      color: #e6c681;
-      font-size: 30px;
-      margin: 10px 0;
-    }
-
-    .section-heading p {
-      color: #c8b994;
-      line-height: 1.8;
-    }
+    .section-heading { text-align: center; margin-bottom: 35px; }
+    .section-heading h2 { color: #e6c681; font-size: 30px; margin: 10px 0; }
+    .section-heading p { color: #c8b994; line-height: 1.8; }
 
     .era-grid {
       display: grid;
@@ -236,27 +166,10 @@
       box-shadow: 0 10px 30px rgba(0,0,0,.25);
     }
 
-    .era-icon {
-      font-size: 40px;
-      color: #dfbd73;
-      margin-bottom: 15px;
-    }
-
-    .era-card h3 {
-      color: #e7ca8b;
-      font-size: 19px;
-      margin: 5px 0;
-    }
-
-    .era-card p {
-      color: #cbbd9e;
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .latest {
-      display: none;
-    }
+    .era-icon { font-size: 40px; color: #dfbd73; margin-bottom: 15px; }
+    .era-card h3 { color: #e7ca8b; font-size: 19px; margin: 5px 0; }
+    .era-card p { color: #cbbd9e; font-size: 14px; line-height: 1.7; }
+    .latest { display: none; }
 
     .footer {
       text-align: center;
@@ -277,9 +190,7 @@
       color: #f4ead5;
     }
 
-    dialog::backdrop {
-      background: rgba(0,0,0,.8);
-    }
+    dialog::backdrop { background: rgba(0,0,0,.8); }
 
     .dialog-card {
       position: relative;
@@ -289,10 +200,7 @@
       padding: 28px;
     }
 
-    .dialog-card h2,
-    .dialog-card h3 {
-      color: #e4c47e;
-    }
+    .dialog-card h2, .dialog-card h3 { color: #e4c47e; }
 
     .dialog-card label {
       display: flex;
@@ -312,9 +220,7 @@
       border-radius: 8px;
     }
 
-    .dialog-card input[type="checkbox"] {
-      width: auto;
-    }
+    .dialog-card input[type="checkbox"] { width: auto; }
 
     .close-btn {
       position: absolute;
@@ -326,9 +232,7 @@
       font-size: 25px;
     }
 
-    #adminPanel {
-      border-top: 1px solid rgba(214,180,108,.25);
-    }
+    #adminPanel { border-top: 1px solid rgba(214,180,108,.25); }
 
     #adminPanel .dialog-card {
       max-width: 700px;
@@ -351,45 +255,20 @@
       gap: 12px;
     }
 
-    #adminStories button {
-      margin-top: 7px;
-    }
+    #adminStories button { margin-top: 7px; }
 
     @media(max-width:750px) {
-      .era-grid {
-        grid-template-columns: repeat(2,minmax(0,1fr));
-      }
-
-      .hero {
-        min-height: 350px;
-      }
+      .era-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .hero { min-height: 350px; }
     }
 
     @media(max-width:480px) {
-      .topbar {
-        padding: 12px 3%;
-      }
-
-      .brand {
-        font-size: 16px;
-      }
-
-      .top-actions button {
-        padding: 8px;
-        font-size: 12px;
-      }
-
-      .era-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .era-card {
-        min-height: 150px;
-      }
-
-      .section {
-        padding: 40px 0;
-      }
+      .topbar { padding: 12px 3%; }
+      .brand { font-size: 16px; }
+      .top-actions button { padding: 8px; font-size: 12px; }
+      .era-grid { grid-template-columns: 1fr; }
+      .era-card { min-height: 150px; }
+      .section { padding: 40px 0; }
     }
   </style>
 </head>
@@ -399,13 +278,9 @@
   <section class="splash" id="splash">
     <div class="splash-content">
       <div class="splash-symbol">𓂀</div>
-
       <p class="eyebrow">A JOURNEY THROUGH HISTORY</p>
-
       <h1>قصة عن مصر</h1>
-
       <h2>رحلة عبر آلاف السنين</h2>
-
       <p>
         تاريخ • حضارة • قصص • روايات
         <br>
@@ -413,13 +288,8 @@
       </p>
 
       <div class="splash-buttons">
-        <button class="gold-btn" id="enterBtn">
-          ادخل إلى الحكاية ▶
-        </button>
-
-        <button class="outline-btn" id="musicBtn" type="button">
-          تشغيل الموسيقى
-        </button>
+        <button class="gold-btn" id="enterBtn">ادخل إلى الحكاية ▶</button>
+        <button class="outline-btn" id="musicBtn" type="button">تشغيل الموسيقى</button>
       </div>
     </div>
   </section>
@@ -432,7 +302,6 @@
 
     <header class="topbar">
       <a href="#top" class="brand">قصة عن مصر 𓂀</a>
-
       <div class="top-actions">
         <button id="langBtn" type="button">EN</button>
         <button id="loginBtn" type="button">تسجيل الدخول</button>
@@ -442,16 +311,13 @@
     <section class="hero" id="top">
       <div class="hero-content">
         <p class="eyebrow">EGYPTIAN HISTORY</p>
-
         <h1>حكاية وطن لا ينتهي</h1>
-
         <p>
           من ضفاف النيل بدأت الحكاية،
           وعلى أرض مصر كُتبت صفحات من أعظم صفحات التاريخ.
           <br>
           اكتشف العصور والشخصيات والقصص التي صنعت حضارة مصر.
         </p>
-
         <a href="#eras" class="gold-btn" style="display:inline-block;text-decoration:none;margin-top:15px">
           ابدأ الرحلة ↓
         </a>
@@ -459,19 +325,13 @@
     </section>
 
     <section class="section" id="eras">
-
       <div class="section-heading">
         <p class="eyebrow">EXPLORE THE HISTORY</p>
-
         <h2>مجلدات التاريخ المصري</h2>
-
-        <p>
-          اختر مجلدًا لتكتشف القصص والحكايات الموجودة بداخله.
-        </p>
+        <p>اختر مجلدًا لتكتشف القصص والحكايات الموجودة بداخله.</p>
       </div>
 
       <div class="era-grid">
-
         <article class="era-card">
           <div class="era-icon">𓂀</div>
           <h3>مصر القديمة</h3>
@@ -507,7 +367,6 @@
           <h3>شخصيات مصرية</h3>
           <p>شخصيات تركت بصمتها في التاريخ.</p>
         </article>
-
       </div>
     </section>
 
@@ -515,10 +374,7 @@
       <div class="section-heading">
         <h2>أحدث القصص</h2>
       </div>
-
-      <div class="empty-state">
-        سيتم عرض القصص هنا.
-      </div>
+      <div class="empty-state">سيتم عرض القصص هنا.</div>
     </section>
 
     <footer class="footer">
@@ -533,10 +389,8 @@
   <dialog id="loginDialog"></dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <script src="./app.js?v=9"></script>
 
-  <!-- تسجيل التطبيق للعمل كتطبيق قابل للتثبيت -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
