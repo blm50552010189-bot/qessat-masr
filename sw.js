@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'qessat-masr-v3';
+const CACHE_NAME = 'qessat-masr-v4';
 
 const APP_FILES = [
   './',
@@ -11,7 +11,7 @@ const APP_FILES = [
   './assets/icon-512.png'
 ];
 
-/* تثبيت وحفظ الملفات الأساسية */
+/* INSTALL */
 self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
@@ -21,7 +21,7 @@ self.addEventListener('install', event => {
         try {
           await cache.add(file);
         } catch (error) {
-          console.warn('Cache failed:', file, error);
+          console.warn('Could not cache:', file);
         }
       }
 
@@ -30,7 +30,7 @@ self.addEventListener('install', event => {
   );
 });
 
-/* تفعيل الإصدار الجديد */
+/* ACTIVATE */
 self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
@@ -38,7 +38,10 @@ self.addEventListener('activate', event => {
 
       await Promise.all(
         keys
-          .filter(key => key.startsWith('qessat-masr-') && key !== CACHE_NAME)
+          .filter(key =>
+            key.startsWith('qessat-masr-') &&
+            key !== CACHE_NAME
+          )
           .map(key => caches.delete(key))
       );
 
@@ -47,7 +50,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-/* تحميل الصفحات والملفات */
+/* FETCH */
 self.addEventListener('fetch', event => {
   const request = event.request;
 
@@ -55,10 +58,9 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(request.url);
 
-  // لا نتدخل في طلبات المواقع الخارجية أو Supabase
   if (url.origin !== self.location.origin) return;
 
-  // الصفحة الرئيسية
+  /* صفحات التطبيق */
   if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
@@ -69,13 +71,17 @@ self.addEventListener('fetch', event => {
 
           if (response.ok) {
             await cache.put('./index.html', response.clone());
+            await cache.put('./', response.clone());
           }
 
           return response;
         } catch (error) {
           return (
             await cache.match('./index.html') ||
-            await cache.match('./')
+            await cache.match('./') ||
+            new Response('التطبيق غير متاح حاليًا', {
+              status: 503
+            })
           );
         }
       })()
@@ -84,45 +90,60 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // الملفات المحلية والصور
+  /* الملفات والصور المحلية */
+  const cleanRequest = new Request(
+    url.origin + url.pathname,
+    {
+      method: 'GET',
+      credentials: 'same-origin'
+    }
+  );
+
+  const refreshPromise = (async () => {
+    const cache = await caches.open(CACHE_NAME);
+
+    const response = await fetch(request);
+
+    if (response.ok && response.type === 'basic') {
+      await cache.put(request, response.clone());
+      await cache.put(cleanRequest, response.clone());
+    }
+  })();
+
+  event.waitUntil(refreshPromise.catch(() => {}));
+
   event.respondWith(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
 
-      const cached = await cache.match(request);
+      const cached =
+        await cache.match(request) ||
+        await cache.match(cleanRequest);
 
-      if (cached) {
-        event.waitUntil(
-          fetch(request)
-            .then(response => {
-              if (response.ok && response.type === 'basic') {
-                return cache.put(request, response.clone());
-              }
-            })
-            .catch(() => {})
-        );
-
-        return cached;
-      }
+      if (cached) return cached;
 
       try {
         const response = await fetch(request);
 
         if (response.ok && response.type === 'basic') {
           await cache.put(request, response.clone());
+          await cache.put(cleanRequest, response.clone());
         }
 
         return response;
       } catch (error) {
-        return new Response('الملف غير متاح دون إنترنت', {
-          status: 503,
-          headers: {
-            'Content-Type': 'text/plain; charset=utf-8'
+        return new Response(
+          'هذا الملف غير متاح دون إنترنت',
+          {
+            status: 503,
+            headers: {
+              'Content-Type': 'text/plain; charset=utf-8'
+            }
           }
-        });
+        );
       }
     })()
   );
 });
 
-console.log('Qessat Masr Offline v3 Ready');
+console.log('Qessat Masr Offline v4 Ready');
