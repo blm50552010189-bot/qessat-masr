@@ -1,8 +1,8 @@
 
 {
-  "name": "قصة عن مصر",
-  "short_name": "قصة عن مصر",
-  "description": "تاريخ وقصص وروايات من مصر",
+  "name": "Qessat Masr",
+  "short_name": "Qessat Masr",
+  "description": "History, Stories and Tales of Egypt",
   "lang": "ar",
   "dir": "rtl",
   "start_url": "/qessat-masr/",
