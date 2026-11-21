@@ -13,13 +13,13 @@
   "theme_color": "#17130d",
   "icons": [
     {
-      "src": "/qessat-masr/assets/icon-192.png",
+      "src": "/qessat-masr/assets/qessat-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/qessat-masr/assets/icon-512.png",
+      "src": "/qessat-masr/assets/qessat-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
