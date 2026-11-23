@@ -27,6 +27,9 @@ let readerFontSize = Number(localStorage.getItem('readerFontSize')) || 20;
 const STORIES_CACHE_KEY = 'qessat_masr_stories_v1';
 let storiesSyncing = false;
 
+/* منع تكرار تشغيل تسجيل الشيخ */
+let introPlayed = false;
+
 const READER_FONTS = [
   { name: 'Cairo', ar: 'كايرو' },
   { name: 'Amiri', ar: 'أميري' },
@@ -74,6 +77,7 @@ function getCachedStories() {
     const stories = JSON.parse(saved);
 
     return Array.isArray(stories) ? stories : null;
+
   } catch (error) {
     console.warn('Offline cache read error:', error);
     return null;
@@ -88,6 +92,7 @@ function saveCachedStories(stories) {
     );
 
     return true;
+
   } catch (error) {
     console.warn('Offline cache save error:', error);
     return false;
@@ -174,31 +179,13 @@ if ($('year')) {
 }
 
 /* =========================================
-   الموسيقى
+   تسجيل الشيخ
 ========================================= */
 
 const audio = $('introAudio');
-const musicBtn = $('musicBtn');
-
-if (musicBtn && audio) {
-  musicBtn.addEventListener('click', async () => {
-    try {
-      if (audio.paused) {
-        await audio.play();
-        musicBtn.textContent = text('Ⅱ إيقاف الموسيقى', 'Ⅱ Pause Music');
-      } else {
-        audio.pause();
-        musicBtn.textContent = text('▶ تشغيل الموسيقى', '▶ Play Music');
-      }
-    } catch (error) {
-      console.error('Audio error:', error);
-      showError('تعذر تشغيل الموسيقى. تأكد من وجود ملف الموسيقى في مجلد assets');
-    }
-  });
-}
 
 /* =========================================
-   دخول الموقع
+   دخول الموقع وتشغيل التسجيل
 ========================================= */
 
 const splash = $('splash');
@@ -212,14 +199,17 @@ if (enterBtn) {
 
     window.scrollTo(0, 0);
 
-    if (audio && audio.paused) {
-      audio.play().then(() => {
-        if (musicBtn) {
-          musicBtn.textContent = text('Ⅱ إيقاف الموسيقى', 'Ⅱ Pause Music');
-        }
-      }).catch(error => {
-        console.warn('Automatic audio playback blocked:', error);
-      });
+    // تشغيل تسجيل الشيخ مرة واحدة عند الدخول
+    if (audio && !introPlayed) {
+      introPlayed = true;
+
+      try {
+        audio.currentTime = 0;
+        await audio.play();
+      } catch (error) {
+        console.warn('Intro audio playback failed:', error);
+        introPlayed = false;
+      }
     }
 
     await loadStories();
@@ -724,6 +714,7 @@ function getImageCandidates(url) {
         ];
       }
     }
+
   } catch (error) {
     console.warn('Image URL could not be parsed:', error);
   }
@@ -768,8 +759,8 @@ function getFolderStories(folder) {
     const category = (story.category || '').trim();
 
     return category === folder.ar ||
-           category === folder.en ||
-           category === folder.id;
+      category === folder.en ||
+      category === folder.id;
   });
 }
 
@@ -1080,10 +1071,12 @@ function renderExplorer() {
     list.innerHTML = `
       <div class="explorer-empty">
         <div style="font-size:45px">📜</div>
-        <h3>${text(
-          'لا توجد قصص في هذا المجلد حتى الآن',
-          'No stories in this folder yet'
-        )}</h3>
+        <h3>
+          ${text(
+            'لا توجد قصص في هذا المجلد حتى الآن',
+            'No stories in this folder yet'
+          )}
+        </h3>
       </div>
     `;
     return;
@@ -1457,15 +1450,6 @@ async function initializeApp() {
     }
   }
 }
-
-/* =========================================
-   مزامنة عند رجوع الإنترنت
-========================================= */
-
-window.addEventListener('online', () => {
-  console.log('Connection restored');
-  loadStories();
-});
 
 /* =========================================
    زر الرجوع في الهاتف
